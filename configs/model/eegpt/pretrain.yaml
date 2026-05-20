@@ -1,0 +1,24 @@
+# configs/model/eegpt/pretrain.yaml
+name: eegpt
+
+# Chọn variant
+variant: large
+
+# Data shape
+img_size: [19, 3200]
+patch_size: 64
+
+# Các thông số khác sẽ được lấy từ variant
+# Có thể override ở đây nếu cần
+# embed_dim: 512  # uncomment để override
+
+# Các thông số này khi xử lý nên được lấy từ variant, 
+# hiện tại đang debug nên tạm thời override
+# embed_dim: 512
+# embed_num: 4
+# encoder_depth: 6
+# predictor_depth: 2
+# reconstructor_depth: 2
+# num_heads: 8
+# gpt_num_hidden_layers: 10
+# gpt_num_attention_heads: 16

@@ -1,0 +1,10 @@
+# Cho Python
+__pycache__/
+*.pyc
+
+# Cho Deep Learning / AI (Ví dụ)
+*.pt
+*.pth
+*.ckpt
+data/
+outputs/

@@ -1,0 +1,42 @@
+defaults:
+  - _self_
+  - dataset: synthetic/v3
+  - model: cbramod/pretrain
+  - weighting: static
+  - hydra: pretrain
+
+seed: 42
+
+module:
+  name: cbramod_pretrain_module
+
+# ======================
+# data
+# ======================
+
+data:
+  batch_size: 8
+  num_workers: 4
+
+# ======================
+# trainer
+# ======================
+
+trainer:
+  max_epochs: 5
+  accelerator: auto
+  devices: 1
+  precision: 32
+
+# ======================
+# optimizer
+# ======================
+
+optimizer:
+  name: adamw
+  lr: 1e-4
+  weight_decay: 0.01
+
+scheduler:
+  name: cosine
+

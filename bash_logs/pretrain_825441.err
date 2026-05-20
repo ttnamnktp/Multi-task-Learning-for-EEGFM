@@ -1,0 +1,277 @@
++ cd /home/infres/ttran-25/eegfm
++ CONDA_PATH=/home/infres/ttran-25/miniconda3
++ source /home/infres/ttran-25/miniconda3/bin/activate
+++ _CONDA_ROOT=/home/infres/ttran-25/miniconda3
+++ . /home/infres/ttran-25/miniconda3/etc/profile.d/conda.sh
++++ export CONDA_EXE=/home/infres/ttran-25/miniconda3/bin/conda
++++ CONDA_EXE=/home/infres/ttran-25/miniconda3/bin/conda
++++ export _CONDA_EXE=/home/infres/ttran-25/miniconda3/bin/conda
++++ _CONDA_EXE=/home/infres/ttran-25/miniconda3/bin/conda
++++ export _CE_M=
++++ _CE_M=
++++ export _CE_CONDA=
++++ _CE_CONDA=
++++ export CONDA_PYTHON_EXE=/home/infres/ttran-25/miniconda3/bin/python
++++ CONDA_PYTHON_EXE=/home/infres/ttran-25/miniconda3/bin/python
++++ export _CONDA_ROOT=/home/infres/ttran-25/miniconda3
++++ _CONDA_ROOT=/home/infres/ttran-25/miniconda3
++++ '[' -z x ']'
+++ conda activate
+++ local cmd=activate
+++ case "$cmd" in
+++ __conda_activate activate
+++ '[' -n '' ']'
+++ local ask_conda
++++ PS1=
++++ __conda_exe shell.posix activate
++++ '[' -n '' ']'
++++ /home/infres/ttran-25/miniconda3/bin/conda shell.posix activate
+++ ask_conda='export _CE_M='\'''\''
+export _CE_CONDA='\'''\''
+PS1='\''(base) '\''
+export PATH='\''/home/infres/ttran-25/.local/bin:/home/infres/ttran-25/miniconda3/bin:/home/infres/ttran-25/miniconda3/condabin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin'\''
+export CONDA_SHLVL='\''1'\''
+export CONDA_PROMPT_MODIFIER='\''(base) '\''
+export CONDA_EXE='\''/home/infres/ttran-25/miniconda3/bin/conda'\''
+export _CONDA_EXE='\''/home/infres/ttran-25/miniconda3/bin/conda'\''
+export CONDA_PYTHON_EXE='\''/home/infres/ttran-25/miniconda3/bin/python'\''
+export _CONDA_ROOT='\''/home/infres/ttran-25/miniconda3'\'''
+++ eval 'export _CE_M='\'''\''
+export _CE_CONDA='\'''\''
+PS1='\''(base) '\''
+export PATH='\''/home/infres/ttran-25/.local/bin:/home/infres/ttran-25/miniconda3/bin:/home/infres/ttran-25/miniconda3/condabin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin'\''
+export CONDA_SHLVL='\''1'\''
+export CONDA_PROMPT_MODIFIER='\''(base) '\''
+export CONDA_EXE='\''/home/infres/ttran-25/miniconda3/bin/conda'\''
+export _CONDA_EXE='\''/home/infres/ttran-25/miniconda3/bin/conda'\''
+export CONDA_PYTHON_EXE='\''/home/infres/ttran-25/miniconda3/bin/python'\''
+export _CONDA_ROOT='\''/home/infres/ttran-25/miniconda3'\'''
++++ export _CE_M=
++++ _CE_M=
++++ export _CE_CONDA=
++++ _CE_CONDA=
++++ PS1='(base) '
++++ export PATH=/home/infres/ttran-25/.local/bin:/home/infres/ttran-25/miniconda3/bin:/home/infres/ttran-25/miniconda3/condabin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin
++++ PATH=/home/infres/ttran-25/.local/bin:/home/infres/ttran-25/miniconda3/bin:/home/infres/ttran-25/miniconda3/condabin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin
++++ export CONDA_SHLVL=1
++++ CONDA_SHLVL=1
++++ export 'CONDA_PROMPT_MODIFIER=(base) '
++++ CONDA_PROMPT_MODIFIER='(base) '
++++ export CONDA_EXE=/home/infres/ttran-25/miniconda3/bin/conda
++++ CONDA_EXE=/home/infres/ttran-25/miniconda3/bin/conda
++++ export _CONDA_EXE=/home/infres/ttran-25/miniconda3/bin/conda
++++ _CONDA_EXE=/home/infres/ttran-25/miniconda3/bin/conda
++++ export CONDA_PYTHON_EXE=/home/infres/ttran-25/miniconda3/bin/python
++++ CONDA_PYTHON_EXE=/home/infres/ttran-25/miniconda3/bin/python
++++ export _CONDA_ROOT=/home/infres/ttran-25/miniconda3
++++ _CONDA_ROOT=/home/infres/ttran-25/miniconda3
+++ __conda_hashr
+++ '[' -n '' ']'
+++ '[' -n '' ']'
+++ hash -r
++ conda activate eegpt
++ local cmd=activate
++ case "$cmd" in
++ __conda_activate activate eegpt
++ '[' -n '' ']'
++ local ask_conda
+++ PS1='(base) '
+++ __conda_exe shell.posix activate eegpt
+++ '[' -n '' ']'
+++ /home/infres/ttran-25/miniconda3/bin/conda shell.posix activate eegpt
++ ask_conda='export _CE_M='\'''\''
+export _CE_CONDA='\'''\''
+PS1='\''(eegpt) '\''
+export PATH='\''/home/infres/ttran-25/.local/bin:/home/infres/ttran-25/miniconda3/envs/eegpt/bin:/home/infres/ttran-25/miniconda3/condabin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin'\''
+export CONDA_PREFIX='\''/home/infres/ttran-25/miniconda3/envs/eegpt'\''
+export CONDA_SHLVL='\''2'\''
+export CONDA_DEFAULT_ENV='\''eegpt'\''
+export CONDA_PROMPT_MODIFIER='\''(eegpt) '\''
+export CONDA_PREFIX_1='\''/home/infres/ttran-25/miniconda3'\''
+export CONDA_EXE='\''/home/infres/ttran-25/miniconda3/bin/conda'\''
+export _CONDA_EXE='\''/home/infres/ttran-25/miniconda3/bin/conda'\''
+export CONDA_PYTHON_EXE='\''/home/infres/ttran-25/miniconda3/bin/python'\''
+export _CONDA_ROOT='\''/home/infres/ttran-25/miniconda3'\''
+. "/home/infres/ttran-25/miniconda3/envs/eegpt/etc/conda/activate.d/activate.sh"
+. "/home/infres/ttran-25/miniconda3/envs/eegpt/etc/conda/activate.d/libglib_activate.sh"
+. "/home/infres/ttran-25/miniconda3/envs/eegpt/etc/conda/activate.d/tesseract_activate.sh"'
++ eval 'export _CE_M='\'''\''
+export _CE_CONDA='\'''\''
+PS1='\''(eegpt) '\''
+export PATH='\''/home/infres/ttran-25/.local/bin:/home/infres/ttran-25/miniconda3/envs/eegpt/bin:/home/infres/ttran-25/miniconda3/condabin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin'\''
+export CONDA_PREFIX='\''/home/infres/ttran-25/miniconda3/envs/eegpt'\''
+export CONDA_SHLVL='\''2'\''
+export CONDA_DEFAULT_ENV='\''eegpt'\''
+export CONDA_PROMPT_MODIFIER='\''(eegpt) '\''
+export CONDA_PREFIX_1='\''/home/infres/ttran-25/miniconda3'\''
+export CONDA_EXE='\''/home/infres/ttran-25/miniconda3/bin/conda'\''
+export _CONDA_EXE='\''/home/infres/ttran-25/miniconda3/bin/conda'\''
+export CONDA_PYTHON_EXE='\''/home/infres/ttran-25/miniconda3/bin/python'\''
+export _CONDA_ROOT='\''/home/infres/ttran-25/miniconda3'\''
+. "/home/infres/ttran-25/miniconda3/envs/eegpt/etc/conda/activate.d/activate.sh"
+. "/home/infres/ttran-25/miniconda3/envs/eegpt/etc/conda/activate.d/libglib_activate.sh"
+. "/home/infres/ttran-25/miniconda3/envs/eegpt/etc/conda/activate.d/tesseract_activate.sh"'
+++ export _CE_M=
+++ _CE_M=
+++ export _CE_CONDA=
+++ _CE_CONDA=
+++ PS1='(eegpt) '
+++ export PATH=/home/infres/ttran-25/.local/bin:/home/infres/ttran-25/miniconda3/envs/eegpt/bin:/home/infres/ttran-25/miniconda3/condabin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin
+++ PATH=/home/infres/ttran-25/.local/bin:/home/infres/ttran-25/miniconda3/envs/eegpt/bin:/home/infres/ttran-25/miniconda3/condabin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin
+++ export CONDA_PREFIX=/home/infres/ttran-25/miniconda3/envs/eegpt
+++ CONDA_PREFIX=/home/infres/ttran-25/miniconda3/envs/eegpt
+++ export CONDA_SHLVL=2
+++ CONDA_SHLVL=2
+++ export CONDA_DEFAULT_ENV=eegpt
+++ CONDA_DEFAULT_ENV=eegpt
+++ export 'CONDA_PROMPT_MODIFIER=(eegpt) '
+++ CONDA_PROMPT_MODIFIER='(eegpt) '
+++ export CONDA_PREFIX_1=/home/infres/ttran-25/miniconda3
+++ CONDA_PREFIX_1=/home/infres/ttran-25/miniconda3
+++ export CONDA_EXE=/home/infres/ttran-25/miniconda3/bin/conda
+++ CONDA_EXE=/home/infres/ttran-25/miniconda3/bin/conda
+++ export _CONDA_EXE=/home/infres/ttran-25/miniconda3/bin/conda
+++ _CONDA_EXE=/home/infres/ttran-25/miniconda3/bin/conda
+++ export CONDA_PYTHON_EXE=/home/infres/ttran-25/miniconda3/bin/python
+++ CONDA_PYTHON_EXE=/home/infres/ttran-25/miniconda3/bin/python
+++ export _CONDA_ROOT=/home/infres/ttran-25/miniconda3
+++ _CONDA_ROOT=/home/infres/ttran-25/miniconda3
+++ . /home/infres/ttran-25/miniconda3/envs/eegpt/etc/conda/activate.d/activate.sh
++++ export __EGL_VENDOR_LIBRARY_DIRS=/home/infres/ttran-25/miniconda3/envs/eegpt/share/glvnd/egl_vendor.d
++++ __EGL_VENDOR_LIBRARY_DIRS=/home/infres/ttran-25/miniconda3/envs/eegpt/share/glvnd/egl_vendor.d
+++ . /home/infres/ttran-25/miniconda3/envs/eegpt/etc/conda/activate.d/libglib_activate.sh
++++ export GSETTINGS_SCHEMA_DIR_CONDA_BACKUP=
++++ GSETTINGS_SCHEMA_DIR_CONDA_BACKUP=
++++ export GSETTINGS_SCHEMA_DIR=/home/infres/ttran-25/miniconda3/envs/eegpt/share/glib-2.0/schemas
++++ GSETTINGS_SCHEMA_DIR=/home/infres/ttran-25/miniconda3/envs/eegpt/share/glib-2.0/schemas
+++ . /home/infres/ttran-25/miniconda3/envs/eegpt/etc/conda/activate.d/tesseract_activate.sh
++++ export TESSDATA_PREFIX=/home/infres/ttran-25/miniconda3/envs/eegpt/share/tessdata/
++++ TESSDATA_PREFIX=/home/infres/ttran-25/miniconda3/envs/eegpt/share/tessdata/
++ __conda_hashr
++ '[' -n '' ']'
++ '[' -n '' ']'
++ hash -r
++ nvidia-smi
++ srun python -m src.pretrain --config-name config_pretrain
+/home/infres/ttran-25/miniconda3/envs/eegpt/lib/python3.10/site-packages/lightning/fabric/__init__.py:36: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  __import__("pkg_resources").declare_namespace(__name__)
+[rank: 0] Global seed set to 42
+Missing logger folder: /home/infres/ttran-25/eegfm/outputs/pretraining_lmdb/eegpt/2026-05-12/15-36-15/tb_logs
+GPU available: True (cuda), used: True
+TPU available: False, using: 0 TPU cores
+IPU available: False, using: 0 IPUs
+HPU available: False, using: 0 HPUs
+You are using a CUDA device ('NVIDIA A100-PCIE-40GB') that has Tensor Cores. To properly utilize them, you should set `torch.set_float32_matmul_precision('medium' | 'high')` which will trade-off precision for performance. For more details, read https://pytorch.org/docs/stable/generated/torch.set_float32_matmul_precision.html#torch.set_float32_matmul_precision
+LOCAL_RANK: 0 - CUDA_VISIBLE_DEVICES: [0]
+
+  | Name  | Type       | Params
+-------------------------------------
+0 | model | EEGPTModel | 101 M 
+-------------------------------------
+76.5 M    Trainable params
+25.3 M    Non-trainable params
+101 M     Total params
+407.214   Total estimated model params size (MB)
+Loading `train_dataloader` to estimate number of stepping batches.
+SLURM auto-requeueing enabled. Setting signal handlers.
+Epoch 0, global step 109: 'valid_loss' reached 1.29808 (best 1.29808), saving model to '/home/infres/ttran-25/eegfm/outputs/pretraining_lmdb/eegpt/2026-05-12/15-36-15/checkpoints/best-epoch=0-valid_loss=1.2981.ckpt' as top 1
+Epoch 1, global step 218: 'valid_loss' reached 1.29321 (best 1.29321), saving model to '/home/infres/ttran-25/eegfm/outputs/pretraining_lmdb/eegpt/2026-05-12/15-36-15/checkpoints/best-epoch=1-valid_loss=1.2932.ckpt' as top 1
+Epoch 2, global step 327: 'valid_loss' was not in top 1
+Epoch 3, global step 436: 'valid_loss' reached 1.28595 (best 1.28595), saving model to '/home/infres/ttran-25/eegfm/outputs/pretraining_lmdb/eegpt/2026-05-12/15-36-15/checkpoints/best-epoch=3-valid_loss=1.2859.ckpt' as top 1
+Epoch 4, global step 545: 'valid_loss' was not in top 1
+Epoch 5, global step 654: 'valid_loss' was not in top 1
+Epoch 6, global step 763: 'valid_loss' was not in top 1
+Epoch 7, global step 872: 'valid_loss' was not in top 1
+Epoch 8, global step 981: 'valid_loss' was not in top 1
+Epoch 9, global step 1090: 'valid_loss' reached 1.28004 (best 1.28004), saving model to '/home/infres/ttran-25/eegfm/outputs/pretraining_lmdb/eegpt/2026-05-12/15-36-15/checkpoints/best-epoch=9-valid_loss=1.2800.ckpt' as top 1
+Epoch 10, global step 1199: 'valid_loss' was not in top 1
+Epoch 11, global step 1308: 'valid_loss' reached 1.27452 (best 1.27452), saving model to '/home/infres/ttran-25/eegfm/outputs/pretraining_lmdb/eegpt/2026-05-12/15-36-15/checkpoints/best-epoch=11-valid_loss=1.2745.ckpt' as top 1
+Epoch 12, global step 1417: 'valid_loss' reached 1.25182 (best 1.25182), saving model to '/home/infres/ttran-25/eegfm/outputs/pretraining_lmdb/eegpt/2026-05-12/15-36-15/checkpoints/best-epoch=12-valid_loss=1.2518.ckpt' as top 1
+Epoch 13, global step 1526: 'valid_loss' was not in top 1
+Epoch 14, global step 1635: 'valid_loss' was not in top 1
+Epoch 15, global step 1744: 'valid_loss' was not in top 1
+Epoch 16, global step 1853: 'valid_loss' reached 1.24991 (best 1.24991), saving model to '/home/infres/ttran-25/eegfm/outputs/pretraining_lmdb/eegpt/2026-05-12/15-36-15/checkpoints/best-epoch=16-valid_loss=1.2499.ckpt' as top 1
+Epoch 17, global step 1962: 'valid_loss' reached 1.24322 (best 1.24322), saving model to '/home/infres/ttran-25/eegfm/outputs/pretraining_lmdb/eegpt/2026-05-12/15-36-15/checkpoints/best-epoch=17-valid_loss=1.2432.ckpt' as top 1
+Epoch 18, global step 2071: 'valid_loss' reached 1.22649 (best 1.22649), saving model to '/home/infres/ttran-25/eegfm/outputs/pretraining_lmdb/eegpt/2026-05-12/15-36-15/checkpoints/best-epoch=18-valid_loss=1.2265.ckpt' as top 1
+Epoch 19, global step 2180: 'valid_loss' was not in top 1
+Epoch 20, global step 2289: 'valid_loss' was not in top 1
+Epoch 21, global step 2398: 'valid_loss' was not in top 1
+Epoch 22, global step 2507: 'valid_loss' reached 1.22303 (best 1.22303), saving model to '/home/infres/ttran-25/eegfm/outputs/pretraining_lmdb/eegpt/2026-05-12/15-36-15/checkpoints/best-epoch=22-valid_loss=1.2230.ckpt' as top 1
+Epoch 23, global step 2616: 'valid_loss' reached 1.21195 (best 1.21195), saving model to '/home/infres/ttran-25/eegfm/outputs/pretraining_lmdb/eegpt/2026-05-12/15-36-15/checkpoints/best-epoch=23-valid_loss=1.2120.ckpt' as top 1
+Epoch 24, global step 2725: 'valid_loss' was not in top 1
+Epoch 25, global step 2834: 'valid_loss' was not in top 1
+Epoch 26, global step 2943: 'valid_loss' was not in top 1
+Epoch 27, global step 3052: 'valid_loss' was not in top 1
+Epoch 28, global step 3161: 'valid_loss' was not in top 1
+Epoch 29, global step 3270: 'valid_loss' was not in top 1
+Epoch 30, global step 3379: 'valid_loss' was not in top 1
+Epoch 31, global step 3488: 'valid_loss' was not in top 1
+Epoch 32, global step 3597: 'valid_loss' was not in top 1
+Epoch 33, global step 3706: 'valid_loss' was not in top 1
+Epoch 34, global step 3815: 'valid_loss' was not in top 1
+Epoch 35, global step 3924: 'valid_loss' was not in top 1
+Epoch 36, global step 4033: 'valid_loss' was not in top 1
+Epoch 37, global step 4142: 'valid_loss' was not in top 1
+Epoch 38, global step 4251: 'valid_loss' was not in top 1
+Epoch 39, global step 4360: 'valid_loss' was not in top 1
+Epoch 40, global step 4469: 'valid_loss' was not in top 1
+Epoch 41, global step 4578: 'valid_loss' was not in top 1
+Epoch 42, global step 4687: 'valid_loss' was not in top 1
+Epoch 43, global step 4796: 'valid_loss' was not in top 1
+Epoch 44, global step 4905: 'valid_loss' was not in top 1
+Epoch 45, global step 5014: 'valid_loss' was not in top 1
+Epoch 46, global step 5123: 'valid_loss' was not in top 1
+Epoch 47, global step 5232: 'valid_loss' was not in top 1
+Epoch 48, global step 5341: 'valid_loss' was not in top 1
+Epoch 49, global step 5450: 'valid_loss' was not in top 1
+Epoch 50, global step 5559: 'valid_loss' was not in top 1
+Epoch 51, global step 5668: 'valid_loss' was not in top 1
+Epoch 52, global step 5777: 'valid_loss' was not in top 1
+Epoch 53, global step 5886: 'valid_loss' was not in top 1
+Epoch 54, global step 5995: 'valid_loss' was not in top 1
+Epoch 55, global step 6104: 'valid_loss' was not in top 1
+Epoch 56, global step 6213: 'valid_loss' was not in top 1
+Epoch 57, global step 6322: 'valid_loss' was not in top 1
+Epoch 58, global step 6431: 'valid_loss' was not in top 1
+Epoch 59, global step 6540: 'valid_loss' was not in top 1
+Epoch 60, global step 6649: 'valid_loss' was not in top 1
+Epoch 61, global step 6758: 'valid_loss' was not in top 1
+Epoch 62, global step 6867: 'valid_loss' was not in top 1
+Epoch 63, global step 6976: 'valid_loss' was not in top 1
+Epoch 64, global step 7085: 'valid_loss' was not in top 1
+Epoch 65, global step 7194: 'valid_loss' was not in top 1
+Epoch 66, global step 7303: 'valid_loss' was not in top 1
+Epoch 67, global step 7412: 'valid_loss' was not in top 1
+Epoch 68, global step 7521: 'valid_loss' was not in top 1
+Epoch 69, global step 7630: 'valid_loss' was not in top 1
+Epoch 70, global step 7739: 'valid_loss' was not in top 1
+Epoch 71, global step 7848: 'valid_loss' was not in top 1
+Epoch 72, global step 7957: 'valid_loss' was not in top 1
+Epoch 73, global step 8066: 'valid_loss' was not in top 1
+Epoch 74, global step 8175: 'valid_loss' was not in top 1
+Epoch 75, global step 8284: 'valid_loss' was not in top 1
+Epoch 76, global step 8393: 'valid_loss' was not in top 1
+Epoch 77, global step 8502: 'valid_loss' was not in top 1
+Epoch 78, global step 8611: 'valid_loss' was not in top 1
+Epoch 79, global step 8720: 'valid_loss' was not in top 1
+Epoch 80, global step 8829: 'valid_loss' was not in top 1
+Epoch 81, global step 8938: 'valid_loss' was not in top 1
+Epoch 82, global step 9047: 'valid_loss' was not in top 1
+Epoch 83, global step 9156: 'valid_loss' was not in top 1
+Epoch 84, global step 9265: 'valid_loss' was not in top 1
+Epoch 85, global step 9374: 'valid_loss' was not in top 1
+Epoch 86, global step 9483: 'valid_loss' was not in top 1
+Epoch 87, global step 9592: 'valid_loss' was not in top 1
+Epoch 88, global step 9701: 'valid_loss' was not in top 1
+Epoch 89, global step 9810: 'valid_loss' was not in top 1
+Epoch 90, global step 9919: 'valid_loss' was not in top 1
+Epoch 91, global step 10028: 'valid_loss' was not in top 1
+Epoch 92, global step 10137: 'valid_loss' was not in top 1
+Epoch 93, global step 10246: 'valid_loss' was not in top 1
+Epoch 94, global step 10355: 'valid_loss' was not in top 1
+Epoch 95, global step 10464: 'valid_loss' was not in top 1
+Epoch 96, global step 10573: 'valid_loss' was not in top 1
+Epoch 97, global step 10682: 'valid_loss' was not in top 1
+Epoch 98, global step 10791: 'valid_loss' was not in top 1
+Epoch 99, global step 10900: 'valid_loss' was not in top 1
+`Trainer.fit` stopped: `max_epochs=100` reached.

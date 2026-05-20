@@ -1,0 +1,31 @@
+defaults:
+  - _self_
+  - dataset: synthetic/v2
+  - model: eegpt/v1
+  - module: eegpt_pretrain_module
+  - hydra: default
+
+seed: 42
+
+weighting:
+  name: mape
+  params:
+    eps: 1.0e-8
+
+data:
+  batch_size: 32
+  num_workers: 4
+
+trainer:
+  max_epochs: 20
+  accelerator: auto
+  devices: 1
+  precision: 32
+
+optimizer:
+  name: adamw
+  lr: 0.001
+  weight_decay: 0.01
+
+scheduler:
+  name: cosine

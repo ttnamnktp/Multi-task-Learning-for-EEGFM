@@ -1,0 +1,2 @@
+name: eegpt_downstream
+pretrained_ckpt: /home/infres/ttran-25/project/EEGPT/checkpoint_/eegpt_mcae_58chs_4s_large4E.ckpt

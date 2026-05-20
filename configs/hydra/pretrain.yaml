@@ -1,0 +1,6 @@
+# configs/hydra/pretrain.yaml
+run:
+  # Tự động tạo thư mục: outputs/tên_dataset/tên_model/ngày/giờ
+  dir: outputs_pretrain/${dataset.name}/${model.name}/${now:%Y-%m-%d}/${now:%H-%M-%S}
+sweep:
+  dir: multirun_pretrain/${dataset.name}/${model.name}/${now:%Y-%m-%d_%H-%M-%S}

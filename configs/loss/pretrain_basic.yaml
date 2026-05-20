@@ -1,0 +1,12 @@
+# configs/loss/pretrain_basic.yaml
+components:
+  reconstruction:
+    enabled: true
+    weight: 1.0
+    
+  contrastive:
+    enabled: false
+    weight: 1.0
+
+best_losses:
+  reconstruction: 0.0041

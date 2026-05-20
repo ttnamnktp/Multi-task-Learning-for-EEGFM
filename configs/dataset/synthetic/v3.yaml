@@ -1,0 +1,12 @@
+defaults:
+  - _self_
+  - synthetic/base
+
+name: synthetic
+num_channels: 15
+seq_len: 1000
+num_classes: 4
+
+train_samples: 512
+val_samples: 128
+test_samples: 128

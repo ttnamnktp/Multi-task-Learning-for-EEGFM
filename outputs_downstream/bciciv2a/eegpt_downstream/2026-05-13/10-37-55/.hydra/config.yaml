@@ -1,0 +1,45 @@
+seed: 42
+data:
+  batch_size: 32
+  num_workers: 4
+trainer:
+  max_epochs: 50
+  accelerator: auto
+  devices: 1
+  precision: 32
+optimizer:
+  name: adamw
+  encoder_lr: 1.0e-06
+  head_lr: 0.001
+  adapter_lr: 0.001
+  weight_decay: 0.01
+scheduler:
+  name: cosine
+dataset:
+  name: bciciv2a
+  num_classes: 4
+  num_channels: 22
+  use_chans_num: 15
+  time_points: 1024
+  use_channels_names:
+  - FP1
+  - FP2
+  - F7
+  - F3
+  - FZ
+  - F4
+  - F8
+  - C3
+  - CZ
+  - C4
+  - P3
+  - PZ
+  - P4
+  - O1
+  - O2
+  datasets_dir: /home/infres/ttran-25/project/datasets/downstream/lmdb_bciciv2a_0_38Hz/LOSO_A05
+model:
+  name: eegpt_downstream
+  pretrained_ckpt: /home/infres/ttran-25/eegfm/outputs/pretraining_lmdb/eegpt/2026-05-12/15-36-15/checkpoints/best-epoch=23-valid_loss=1.2120.ckpt
+module:
+  name: classification

@@ -1,0 +1,15 @@
+variants:
+
+  base:
+
+    in_dim: 200
+    out_dim: 200
+    d_model: 200
+    dim_feedforward: 400
+    seq_len: 10
+
+    n_layer: 12
+    nhead: 4
+
+    need_mask: true
+    mask_ratio: 0.4
