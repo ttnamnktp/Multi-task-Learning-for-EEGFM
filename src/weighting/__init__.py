@@ -1,2 +1,0 @@
-from src.weighting.static_weighting import StaticWeighting
-from src.weighting.mape_weighting import MAPEWeighting
