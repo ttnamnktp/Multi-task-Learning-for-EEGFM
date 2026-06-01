@@ -8,3 +8,5 @@ __pycache__/
 *.ckpt
 outputs*/
 bash_logs/
+eegfm_source_map.md
+_collect_project_files_.py
