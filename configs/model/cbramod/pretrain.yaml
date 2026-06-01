@@ -1,5 +1,0 @@
-# configs/model/eegpt/pretrain.yaml
-name: cbramod
-
-# Chọn variant
-variant: base

@@ -6,8 +6,7 @@ from lightning.pytorch.callbacks import ModelCheckpoint
 from hydra.core.hydra_config import HydraConfig
 import os
 
-from src.module.registry import get_module
-import src.module
+from src.pretrain_module.registry import get_module
 from src.data.data import EEGDataModule
 
 @hydra.main(version_base=None, config_path='../configs', config_name='config')
@@ -47,9 +46,10 @@ def main(cfg: DictConfig):
         accelerator=cfg.trainer.accelerator,
         devices=cfg.trainer.devices,
         precision=cfg.trainer.precision,
-        # accumulate_grad_batches=cfg.trainer.accumulate_grad_batches,
         logger=logger,
-        callbacks=[ckpt]
+        callbacks=[ckpt],
+        gradient_clip_val=1.0,
+        gradient_clip_algorithm="norm"
     )
 
     trainer.fit(model, datamodule=datamodule)

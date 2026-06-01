@@ -1,0 +1,22 @@
+img_size: [19, 3200]
+
+patch_size: 200
+
+embed_dim: 512
+embed_num: 4
+
+num_heads: 8
+
+encoder_depth: 8
+predictor_depth: 2
+reconstructor_depth: 2
+
+mlp_ratio: 4.0
+
+qkv_bias: true
+
+drop_rate: 0.0
+attn_drop_rate: 0.0
+drop_path_rate: 0.0
+
+init_std: 0.02

@@ -1,6 +1,0 @@
-# configs/weighting/static.yaml
-name: static
-params:
-  weights:
-    loss1: 1.0
-    loss2: 1.0

@@ -207,7 +207,7 @@ def _generate_square_subsequent_mask(
 
 
 class PatchEmbedding(nn.Module):
-    def __init__(self, in_dim, out_dim, d_model, seq_len):
+    def __init__(self, in_dim, out_dim, d_model, seq_len=16):
         super().__init__()
         self.d_model = d_model
         self.positional_encoding = nn.Sequential(

@@ -14,7 +14,8 @@ class CBraMod(nn.Module):
         out_dim=200,
         d_model=200,
         dim_feedforward=800,
-        seq_len=30,
+        seq_len=16,
+        patch_size=200,
         n_layer=12,
         nhead=8,
         need_mask=True,
@@ -50,31 +51,12 @@ class CBraMod(nn.Module):
 
         self.apply(self._init_weights)
 
-    def forward(self, x, return_mask=True):
-
-        mask = None
-
-        if return_mask:
-            mask = self._make_mask(x)
-
+    def forward(self, x, mask=None):
         z = self.patch_embedding(x, mask)
         z = self.encoder(z)
-
-        return {
-            "latent": z,
-            "mask": mask
-        }
+        return z
 
     @staticmethod
     def _init_weights(m):
         if isinstance(m, nn.Linear):
             nn.init.kaiming_normal_(m.weight)
-
-    def _make_mask(self, x):
-        print(x.shape)
-        bz, ch, patch, _ = x.shape
-
-        mask = torch.zeros((bz, ch, patch), device=x.device)
-        mask = mask.bernoulli_(self.mask_ratio)
-
-        return mask

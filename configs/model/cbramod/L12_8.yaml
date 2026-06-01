@@ -1,0 +1,15 @@
+# configs/model/cbramod/base.yaml
+in_dim: 200
+out_dim: 200
+
+d_model: 200
+dim_feedforward: 800
+
+n_layer: 12
+nhead: 8
+
+need_mask: true
+mask_ratio: 0.5
+
+patch_size: 200
+seq_len: 16

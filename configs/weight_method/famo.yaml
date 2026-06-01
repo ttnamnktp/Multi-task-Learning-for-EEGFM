@@ -1,0 +1,4 @@
+name: "famo"  
+gamma: 1e-5
+w_lr: 0.025
+max_norm: 1.0

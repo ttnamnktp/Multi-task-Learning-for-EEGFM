@@ -9,27 +9,6 @@ import math
 from src.models.base_model import BaseModel
 from src.models.registry import register_model
 
-# CHANNEL_DICT = {k.upper():v for v,k in enumerate(
-#                      [      'FP1', 'FPZ', 'FP2', 
-#                         "AF7", 'AF3', 'AF4', "AF8", 
-#             'F7', 'F5', 'F3', 'F1', 'FZ', 'F2', 'F4', 'F6', 'F8', 
-#         'FT7', 'FC5', 'FC3', 'FC1', 'FCZ', 'FC2', 'FC4', 'FC6', 'FT8', 
-#             'T7', 'C5', 'C3', 'C1', 'CZ', 'C2', 'C4', 'C6', 'T8', 
-#         'TP7', 'CP5', 'CP3', 'CP1', 'CPZ', 'CP2', 'CP4', 'CP6', 'TP8',
-#              'P7', 'P5', 'P3', 'P1', 'PZ', 'P2', 'P4', 'P6', 'P8', 
-#                       'PO7', "PO5", 'PO3', 'POZ', 'PO4', "PO6", 'PO8', 
-#                                'O1', 'OZ', 'O2', ])}
-
-# use_channels_names = [      'FP1', 'FPZ', 'FP2', 
-#                                'AF3', 'AF4', 
-#             'F7', 'F5', 'F3', 'F1', 'FZ', 'F2', 'F4', 'F6', 'F8', 
-#         'FT7', 'FC5', 'FC3', 'FC1', 'FCZ', 'FC2', 'FC4', 'FC6', 'FT8', 
-#             'T7', 'C5', 'C3', 'C1', 'CZ', 'C2', 'C4', 'C6', 'T8', 
-#         'TP7', 'CP5', 'CP3', 'CP1', 'CPZ', 'CP2', 'CP4', 'CP6', 'TP8',
-#              'P7', 'P5', 'P3', 'P1', 'PZ', 'P2', 'P4', 'P6', 'P8', 
-#                       'PO7', 'PO3', 'POZ',  'PO4', 'PO8', 
-#                                'O1', 'OZ', 'O2', ]
-
 CHANNEL_DICT = {k.upper():v for v,k in enumerate(
                      [
                 "FP1","FP2","F7","F3","FZ","F4","F8","T3","C3","CZ","C4",
@@ -831,6 +810,79 @@ class EEGTransformer(nn.Module):
 # Main Model
 # =========================================================
 
+# @register_model("eegpt")
+# class EEGPTModel(BaseModel):
+#     """
+#     Forward:
+#         classification / finetune -> pooled feature
+
+#     forward_pretrain:
+#         latent, predicted_latent, reconstructed_patches
+#     """
+
+#     def __init__(self, model_cfg):
+#         super().__init__(model_cfg)
+
+#         self.encoder = EEGTransformer(**model_cfg['encoder'])
+#         self.predictor = EEGTransformerPredictor(**model_cfg['predictor'])
+#         self.reconstructor = EEGTransformerReconstructor(**model_cfg['reconstructor'])
+
+#         self.target_encoder = copy.deepcopy(self.encoder)
+#         for p in self.target_encoder.parameters():
+#             p.requires_grad = False
+            
+#         self.chans_id       = self.encoder.prepare_chan_ids(use_channels_names)
+#         self.USE_LOSS_A = True
+#         self.USE_LN     = True
+#         self.USE_SKIP   = True
+                
+#     def make_masks(self, num_patchs, mC_x=12, p_n_y=0.5, p_c_y=0.2):
+        
+#         C, N = num_patchs
+        
+#         while True:
+#             mask_x = []# mN, mC
+#             mask_y = []
+#             mask_y_bx = []
+#             for i in range(N):
+#                 c_idx = torch.randperm(C) + i*C
+#                 if random.random()>p_n_y:
+#                     mask_x.append(c_idx[:mC_x])
+#                     mask_y_bx.append(c_idx[mC_x:])
+#                 else:
+#                     mask_y.append(c_idx)
+#             if len(mask_x)==0: continue
+#             if len(mask_y_bx)==0: continue
+#             mask_y_bx = torch.cat(mask_y_bx, dim=0)
+#             mask_y_bx = mask_y_bx[torch.rand(mask_y_bx.shape)<p_c_y]
+#             if len(mask_y_bx)==0: continue
+#             break
+        
+#         return torch.stack(mask_x, dim=0), torch.cat(mask_y+[mask_y_bx], dim=0)
+    
+#     def forward_target(self, x, mask_y):
+#         with torch.no_grad():
+#             h = self.target_encoder(x, self.chans_id.to(x))
+#             h = F.layer_norm(h, (h.size(-1),))  # normalize over feature-dim
+#             C, N = self.encoder.num_patches
+#             assert x.shape[-1]%N==0 and x.shape[-2]%C == 0
+#             block_size_c, block_size_n = x.shape[-2]//C, x.shape[-1]//N
+#             x = x.view(x.shape[0], C, block_size_c, N, block_size_n)
+#             x = x.permute(0, 3, 1, 2, 4).contiguous() # B, N, C, bc, bn
+#             x = x.view(x.shape[0], C, N, block_size_c * block_size_n)
+#             y = apply_mask(mask_y.to(x.device), x)
+#             if self.USE_LN:
+#                 y = F.layer_norm(y, (y.size(-1),))
+#             return h, y
+
+#     def forward_context(self, x, mask_x, mask_y):
+#         z = self.encoder(x, self.chans_id.to(x), mask_x=mask_x)
+#         z, comb_z = self.predictor(z, mask_x=mask_x)
+#         if not self.USE_SKIP:
+#             comb_z = z
+#         r = self.reconstructor(comb_z, self.chans_id.to(x), mask_y=mask_y)
+#         return z, r
+
 @register_model("eegpt")
 class EEGPTModel(BaseModel):
     """
@@ -843,63 +895,11 @@ class EEGPTModel(BaseModel):
 
     def __init__(self, model_cfg):
         super().__init__(model_cfg)
-
         self.encoder = EEGTransformer(**model_cfg['encoder'])
-        self.predictor = EEGTransformerPredictor(**model_cfg['predictor'])
-        self.reconstructor = EEGTransformerReconstructor(**model_cfg['reconstructor'])
-
-        self.target_encoder = copy.deepcopy(self.encoder)
-        for p in self.target_encoder.parameters():
-            p.requires_grad = False
-            
         self.chans_id       = self.encoder.prepare_chan_ids(use_channels_names)
-        self.USE_LOSS_A = True
-        self.USE_LN     = True
-        self.USE_SKIP   = True
-                
-    def make_masks(self, num_patchs, mC_x=12, p_n_y=0.5, p_c_y=0.2):
-        
-        C, N = num_patchs
-        
-        while True:
-            mask_x = []# mN, mC
-            mask_y = []
-            mask_y_bx = []
-            for i in range(N):
-                c_idx = torch.randperm(C) + i*C
-                if random.random()>p_n_y:
-                    mask_x.append(c_idx[:mC_x])
-                    mask_y_bx.append(c_idx[mC_x:])
-                else:
-                    mask_y.append(c_idx)
-            if len(mask_x)==0: continue
-            if len(mask_y_bx)==0: continue
-            mask_y_bx = torch.cat(mask_y_bx, dim=0)
-            mask_y_bx = mask_y_bx[torch.rand(mask_y_bx.shape)<p_c_y]
-            if len(mask_y_bx)==0: continue
-            break
-        
-        return torch.stack(mask_x, dim=0), torch.cat(mask_y+[mask_y_bx], dim=0)
-    
-    def forward_target(self, x, mask_y):
-        with torch.no_grad():
-            h = self.target_encoder(x, self.chans_id.to(x))
-            h = F.layer_norm(h, (h.size(-1),))  # normalize over feature-dim
-            C, N = self.encoder.num_patches
-            assert x.shape[-1]%N==0 and x.shape[-2]%C == 0
-            block_size_c, block_size_n = x.shape[-2]//C, x.shape[-1]//N
-            x = x.view(x.shape[0], C, block_size_c, N, block_size_n)
-            x = x.permute(0, 3, 1, 2, 4).contiguous() # B, N, C, bc, bn
-            x = x.view(x.shape[0], C, N, block_size_c * block_size_n)
-            y = apply_mask(mask_y.to(x.device), x)
-            if self.USE_LN:
-                y = F.layer_norm(y, (y.size(-1),))
-            return h, y
 
-    def forward_context(self, x, mask_x, mask_y):
-        z = self.encoder(x, self.chans_id.to(x), mask_x=mask_x)
-        z, comb_z = self.predictor(z, mask_x=mask_x)
-        if not self.USE_SKIP:
-            comb_z = z
-        r = self.reconstructor(comb_z, self.chans_id.to(x), mask_y=mask_y)
-        return z, r
+          
+    def forward(self, x, chan_ids=None, mask_x=None, mask_t=None):
+        # return self.encoder(x, self.chans_id.to(x), mask_x=mask_x)
+        return self.encoder(x, chan_ids=chan_ids, mask_x=mask_x, mask_t=mask_t)
+

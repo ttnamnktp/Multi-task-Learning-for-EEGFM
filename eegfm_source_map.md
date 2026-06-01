@@ -1,24 +1,32 @@
 # Project Source Map — `eegfm`
 
-> Được tạo lúc: 2026-05-13 14:53:47  
+> Được tạo lúc: 2026-05-28 10:16:11  
 > Thư mục gốc: `/home/infres/ttran-25/eegfm`  
-> Tổng số file: **71**
+> Tổng số file: **113**
 
 
 ---
 
 ## Mục lục
 
+- [`configs/config_cbramod_test.yaml`](#configsconfig-cbramod-testyaml)
+- [`configs/config_cbramod_test_C.yaml`](#configsconfig-cbramod-test-cyaml)
+- [`configs/config_cbramod_test_R.yaml`](#configsconfig-cbramod-test-ryaml)
 - [`configs/config_downstream.yaml`](#configsconfig-downstreamyaml)
+- [`configs/config_eegpt_pretrain_test.yaml`](#configsconfig-eegpt-pretrain-testyaml)
+- [`configs/config_eegpt_pretrain_test_C.yaml`](#configsconfig-eegpt-pretrain-test-cyaml)
+- [`configs/config_eegpt_pretrain_test_R.yaml`](#configsconfig-eegpt-pretrain-test-ryaml)
 - [`configs/config_pretrain.yaml`](#configsconfig-pretrainyaml)
 - [`configs/config_pretrain_mape.yaml`](#configsconfig-pretrain-mapeyaml)
 - [`configs/config_pretrain_static.yaml`](#configsconfig-pretrain-staticyaml)
 - [`configs/config_pretrain_tuev.yaml`](#configsconfig-pretrain-tuevyaml)
 - [`configs/dataset/bciciv2a/v1.yaml`](#configsdatasetbciciv2av1yaml)
+- [`configs/dataset/pretraining_lmdb/main.yaml`](#configsdatasetpretraining-lmdbmainyaml)
 - [`configs/dataset/pretraining_lmdb/v1.yaml`](#configsdatasetpretraining-lmdbv1yaml)
 - [`configs/dataset/synthetic/base.yaml`](#configsdatasetsyntheticbaseyaml)
 - [`configs/dataset/synthetic/v1.yaml`](#configsdatasetsyntheticv1yaml)
 - [`configs/dataset/synthetic/v2.yaml`](#configsdatasetsyntheticv2yaml)
+- [`configs/dataset/synthetic/v3.yaml`](#configsdatasetsyntheticv3yaml)
 - [`configs/hydra/default.yaml`](#configshydradefaultyaml)
 - [`configs/hydra/downstream.yaml`](#configshydradownstreamyaml)
 - [`configs/hydra/pretrain.yaml`](#configshydrapretrainyaml)
@@ -30,8 +38,14 @@
 - [`configs/model/eegpt/downstream.yaml`](#configsmodeleegptdownstreamyaml)
 - [`configs/model/eegpt/pretrain.yaml`](#configsmodeleegptpretrainyaml)
 - [`configs/model/eegpt/variants.yaml`](#configsmodeleegptvariantsyaml)
+- [`configs/module/cbramod_pretrain_module.yaml`](#configsmodulecbramod-pretrain-moduleyaml)
 - [`configs/module/classification_module.yaml`](#configsmoduleclassification-moduleyaml)
 - [`configs/module/eegpt_pretrain_module.yaml`](#configsmoduleeegpt-pretrain-moduleyaml)
+- [`configs/tasks/both.yaml`](#configstasksbothyaml)
+- [`configs/tasks/contrastive_only.yaml`](#configstaskscontrastive-onlyyaml)
+- [`configs/tasks/reconstruction_only.yaml`](#configstasksreconstruction-onlyyaml)
+- [`configs/weight_method/famo.yaml`](#configsweight-methodfamoyaml)
+- [`configs/weight_method/linear.yaml`](#configsweight-methodlinearyaml)
 - [`configs/weighting/mape.yaml`](#configsweightingmapeyaml)
 - [`configs/weighting/static.yaml`](#configsweightingstaticyaml)
 - [`script/downstream.sh`](#scriptdownstreamsh)
@@ -41,6 +55,12 @@
 - [`script/pretrain_mape.sh`](#scriptpretrain-mapesh)
 - [`script/pretrain_static.sh`](#scriptpretrain-staticsh)
 - [`script/pretrain_tuev.sh`](#scriptpretrain-tuevsh)
+- [`script/test_cbramod.sh`](#scripttest-cbramodsh)
+- [`script/test_cbramod_C.sh`](#scripttest-cbramod-csh)
+- [`script/test_cbramod_R.sh`](#scripttest-cbramod-rsh)
+- [`script/test_eegpt.sh`](#scripttest-eegptsh)
+- [`script/test_eegpt_C.sh`](#scripttest-eegpt-csh)
+- [`script/test_eegpt_R.sh`](#scripttest-eegpt-rsh)
 - [`src/pretrain.py`](#srcpretrainpy)
 - [`src/train.py`](#srctrainpy)
 - [`src/data/__init__.py`](#srcdata--init--py)
@@ -61,14 +81,36 @@
 - [`src/module/__init__.py`](#srcmodule--init--py)
 - [`src/module/base_module.py`](#srcmodulebase-modulepy)
 - [`src/module/registry.py`](#srcmoduleregistrypy)
+- [`src/module/cbramod/cbramod_pretrain_module.bak.py`](#srcmodulecbramodcbramod-pretrain-modulebakpy)
 - [`src/module/cbramod/cbramod_pretrain_module.py`](#srcmodulecbramodcbramod-pretrain-modulepy)
 - [`src/module/cbramod/config_builder.py`](#srcmodulecbramodconfig-builderpy)
+- [`src/module/cbramod/utils.py`](#srcmodulecbramodutilspy)
 - [`src/module/cbramod/task/base_task.py`](#srcmodulecbramodtaskbase-taskpy)
+- [`src/module/cbramod/task/byol.py`](#srcmodulecbramodtaskbyolpy)
+- [`src/module/cbramod/task/contrastive.py`](#srcmodulecbramodtaskcontrastivepy)
 - [`src/module/cbramod/task/reconstruction.py`](#srcmodulecbramodtaskreconstructionpy)
 - [`src/module/downstream/classification_module.py`](#srcmoduledownstreamclassification-modulepy)
 - [`src/module/eegpt/config_builder.py`](#srcmoduleeegptconfig-builderpy)
 - [`src/module/eegpt/eegpt_pretrain_module.py`](#srcmoduleeegpteegpt-pretrain-modulepy)
 - [`src/module/eegpt/gradient_monitor.py`](#srcmoduleeegptgradient-monitorpy)
+- [`src/mtl/mtl.py`](#srcmtlmtlpy)
+- [`src/pretrain_module/__init__.py`](#srcpretrain-module--init--py)
+- [`src/pretrain_module/base_module.py`](#srcpretrain-modulebase-modulepy)
+- [`src/pretrain_module/registry.py`](#srcpretrain-moduleregistrypy)
+- [`src/pretrain_module/cbramod/cbramod_pretrain_module.py`](#srcpretrain-modulecbramodcbramod-pretrain-modulepy)
+- [`src/pretrain_module/cbramod/config_builder.py`](#srcpretrain-modulecbramodconfig-builderpy)
+- [`src/pretrain_module/cbramod/utils.py`](#srcpretrain-modulecbramodutilspy)
+- [`src/pretrain_module/cbramod/task/base_task.py`](#srcpretrain-modulecbramodtaskbase-taskpy)
+- [`src/pretrain_module/cbramod/task/byol.py`](#srcpretrain-modulecbramodtaskbyolpy)
+- [`src/pretrain_module/cbramod/task/contrastive.py`](#srcpretrain-modulecbramodtaskcontrastivepy)
+- [`src/pretrain_module/cbramod/task/reconstruction.py`](#srcpretrain-modulecbramodtaskreconstructionpy)
+- [`src/pretrain_module/eegpt/config_builder.py`](#srcpretrain-moduleeegptconfig-builderpy)
+- [`src/pretrain_module/eegpt/eegpt_pretrain_module.py`](#srcpretrain-moduleeegpteegpt-pretrain-modulepy)
+- [`src/pretrain_module/eegpt/utils.py`](#srcpretrain-moduleeegptutilspy)
+- [`src/pretrain_module/eegpt/task/base_task.py`](#srcpretrain-moduleeegpttaskbase-taskpy)
+- [`src/pretrain_module/eegpt/task/byol.py`](#srcpretrain-moduleeegpttaskbyolpy)
+- [`src/pretrain_module/eegpt/task/contrastive.py`](#srcpretrain-moduleeegpttaskcontrastivepy)
+- [`src/pretrain_module/eegpt/task/reconstruction.py`](#srcpretrain-moduleeegpttaskreconstructionpy)
 - [`src/utils/callbacks.py`](#srcutilscallbackspy)
 - [`src/utils/metrics.py`](#srcutilsmetricspy)
 - [`src/utils/optimizers.py`](#srcutilsoptimizerspy)
@@ -80,6 +122,147 @@
 - [`src/weighting/mape_weighting.py`](#srcweightingmape-weightingpy)
 - [`src/weighting/registry.py`](#srcweightingregistrypy)
 - [`src/weighting/static_weighting.py`](#srcweightingstatic-weightingpy)
+
+---
+
+
+## `configs/config_cbramod_test.yaml`
+
+**Đường dẫn đầy đủ:** `/home/infres/ttran-25/eegfm/configs/config_cbramod_test.yaml`  
+**Kích thước:** `0.6 KB`  
+**Loại:** `.yaml`
+
+```yaml
+defaults:
+  - _self_
+  - dataset: pretraining_lmdb/v1
+  - model: cbramod/pretrain
+  - tasks: both
+  - weight_method: famo
+  - hydra: pretrain
+
+seed: 42
+
+module:
+  name: cbramod_pretrain_module
+
+# ======================
+# data
+# ======================
+
+data:
+  batch_size: 64
+  num_workers: 4
+  patch_size: 200
+
+# ======================
+# trainer
+# ======================
+
+trainer:
+  max_epochs: 20
+  accelerator: auto
+  devices: 1
+  precision: 32
+
+# ======================
+# optimizer
+# ======================
+
+optimizer:
+  name: adamw
+  lr: 1e-4
+  weight_decay: 0.01
+
+scheduler:
+  name: cosine
+```
+
+---
+
+
+## `configs/config_cbramod_test_C.yaml`
+
+**Đường dẫn đầy đủ:** `/home/infres/ttran-25/eegfm/configs/config_cbramod_test_C.yaml`  
+**Kích thước:** `0.5 KB`  
+**Loại:** `.yaml`
+
+```yaml
+# configs/config.yaml
+defaults:
+  - _self_
+  - dataset: pretraining_lmdb/v1
+  - model: cbramod/pretrain
+  - tasks: contrastive_only  # hoặc reconstruction_only, contrastive_only
+  - weight_method: linear
+  - hydra: pretrain
+
+seed: 42
+module:
+  name: cbramod_pretrain_module
+
+data:
+  batch_size: 64
+  num_workers: 4
+  patch_size: 200
+
+trainer:
+  max_epochs: 20
+  accelerator: auto
+  devices: 1
+  precision: 32
+
+optimizer:
+  name: adamw
+  lr: 1e-4
+  weight_decay: 0.01
+
+scheduler:
+  name: cosine
+```
+
+---
+
+
+## `configs/config_cbramod_test_R.yaml`
+
+**Đường dẫn đầy đủ:** `/home/infres/ttran-25/eegfm/configs/config_cbramod_test_R.yaml`  
+**Kích thước:** `0.5 KB`  
+**Loại:** `.yaml`
+
+```yaml
+# configs/config.yaml
+defaults:
+  - _self_
+  - dataset: pretraining_lmdb/v1
+  - model: cbramod/pretrain
+  - tasks: reconstruction_only  # hoặc reconstruction_only, contrastive_only
+  - weight_method: linear
+  - hydra: pretrain
+
+seed: 42
+module:
+  name: cbramod_pretrain_module
+
+data:
+  batch_size: 64
+  num_workers: 4
+  patch_size: 200
+
+trainer:
+  max_epochs: 20
+  accelerator: auto
+  devices: 1
+  precision: 32
+
+optimizer:
+  name: adamw
+  # lr: 6e-5
+  weight_decay: 0.01
+
+scheduler:
+  name: cosine
+```
 
 ---
 
@@ -119,6 +302,180 @@ optimizer:
 
 scheduler:
   name: cosine
+```
+
+---
+
+
+## `configs/config_eegpt_pretrain_test.yaml`
+
+**Đường dẫn đầy đủ:** `/home/infres/ttran-25/eegfm/configs/config_eegpt_pretrain_test.yaml`  
+**Kích thước:** `0.9 KB`  
+**Loại:** `.yaml`
+
+```yaml
+defaults:
+  - _self_
+  - dataset: pretraining_lmdb/v1
+  - model: eegpt/pretrain
+  - tasks: both
+  - weight_method: famo
+  - module: eegpt_pretrain_module
+  - hydra: pretrain
+
+seed: 42
+
+# Model configuration
+# model:
+#   variant: large  # Dễ dàng thay đổi variant
+#   img_size: [19, 3200]
+#   patch_size: 64
+
+# Training
+data:
+  batch_size: 64
+  num_workers: 8
+  scale_div: 100.0
+  augment_prob: 0.25
+  mask_ratio: 0.4
+
+trainer:
+  max_epochs: 100 # set to 5 for debugging, defaults is 100
+  accelerator: auto
+  devices: 1
+  precision: 32
+  # accumulate_grad_batches: 4 # to solve memory problem when batch_size is too large
+  # gradient_clip_val: 1.0
+  # gradient_clip_algorithm: norm
+
+optimizer:
+  name: adamw
+  lr: 0.0001
+  weight_decay: 0.01
+
+scheduler:
+  name: cosine
+
+# Logging
+# logging:
+#   log_root: ./logs
+#   auto_name: true  # Tự động generate tên experiment
+```
+
+---
+
+
+## `configs/config_eegpt_pretrain_test_C.yaml`
+
+**Đường dẫn đầy đủ:** `/home/infres/ttran-25/eegfm/configs/config_eegpt_pretrain_test_C.yaml`  
+**Kích thước:** `0.9 KB`  
+**Loại:** `.yaml`
+
+```yaml
+defaults:
+  - _self_
+  - dataset: pretraining_lmdb/v1
+  - model: eegpt/pretrain
+  - tasks: contrastive_only
+  - weight_method: linear
+  - module: eegpt_pretrain_module
+  - hydra: pretrain
+
+seed: 42
+
+# Model configuration
+# model:
+#   variant: large  # Dễ dàng thay đổi variant
+#   img_size: [19, 3200]
+#   patch_size: 64
+
+# Training
+data:
+  batch_size: 64
+  num_workers: 8
+  scale_div: 100.0
+  augment_prob: 0.25
+  mask_ratio: 0.4
+
+trainer:
+  max_epochs: 100 # set to 5 for debugging, defaults is 100
+  accelerator: auto
+  devices: 1
+  precision: 32
+  # accumulate_grad_batches: 4 # to solve memory problem when batch_size is too large
+  # gradient_clip_val: 1.0
+  # gradient_clip_algorithm: norm
+
+optimizer:
+  name: adamw
+  lr: 6e-5
+  weight_decay: 0.01
+
+scheduler:
+  name: cosine
+
+# Logging
+# logging:
+#   log_root: ./logs
+#   auto_name: true  # Tự động generate tên experiment
+```
+
+---
+
+
+## `configs/config_eegpt_pretrain_test_R.yaml`
+
+**Đường dẫn đầy đủ:** `/home/infres/ttran-25/eegfm/configs/config_eegpt_pretrain_test_R.yaml`  
+**Kích thước:** `0.9 KB`  
+**Loại:** `.yaml`
+
+```yaml
+defaults:
+  - _self_
+  - dataset: pretraining_lmdb/v1
+  - model: eegpt/pretrain
+  - tasks: reconstruction_only
+  - weight_method: linear
+  - module: eegpt_pretrain_module
+  - hydra: pretrain
+
+seed: 42
+
+# Model configuration
+# model:
+#   variant: large  # Dễ dàng thay đổi variant
+#   img_size: [19, 3200]
+#   patch_size: 64
+
+# Training
+data:
+  batch_size: 64
+  num_workers: 8
+  scale_div: 100.0
+  augment_prob: 0.25
+  mask_ratio: 0.4
+
+trainer:
+  max_epochs: 100 # set to 5 for debugging, defaults is 100
+  accelerator: auto
+  devices: 1
+  precision: 32
+  # accumulate_grad_batches: 4 # to solve memory problem when batch_size is too large
+  # gradient_clip_val: 1.0
+  # gradient_clip_algorithm: norm
+
+optimizer:
+  name: adamw
+  lr: 6e-5
+  weight_decay: 0.01
+
+scheduler:
+  name: cosine
+
+# Logging
+# logging:
+#   log_root: ./logs
+#   auto_name: true  # Tự động generate tên experiment
 ```
 
 ---
@@ -352,15 +709,32 @@ datasets_dir: /home/infres/ttran-25/project/datasets/downstream/lmdb_bciciv2a_0_
 ---
 
 
-## `configs/dataset/pretraining_lmdb/v1.yaml`
+## `configs/dataset/pretraining_lmdb/main.yaml`
 
-**Đường dẫn đầy đủ:** `/home/infres/ttran-25/eegfm/configs/dataset/pretraining_lmdb/v1.yaml`  
-**Kích thước:** `0.1 KB`  
+**Đường dẫn đầy đủ:** `/home/infres/ttran-25/eegfm/configs/dataset/pretraining_lmdb/main.yaml`  
+**Kích thước:** `0.2 KB`  
 **Loại:** `.yaml`
 
 ```yaml
 name: pretraining_lmdb
 scale_div: 100
+datasets_dir: /home/infres/tran-24/EEGPT_MTL/tueg_ex_tuab_tuev_20
+# datasets_dir: /home/infres/tran-24/EEGPT_MTL/tueg_16s_200fs_60notch_test
+```
+
+---
+
+
+## `configs/dataset/pretraining_lmdb/v1.yaml`
+
+**Đường dẫn đầy đủ:** `/home/infres/ttran-25/eegfm/configs/dataset/pretraining_lmdb/v1.yaml`  
+**Kích thước:** `0.2 KB`  
+**Loại:** `.yaml`
+
+```yaml
+name: pretraining_lmdb
+scale_div: 100
+# datasets_dir: /home/infres/tran-24/EEGPT_MTL/tueg_ex_tuab_tuev_20
 datasets_dir: /home/infres/tran-24/EEGPT_MTL/tueg_16s_200fs_60notch_test
 ```
 
@@ -418,6 +792,30 @@ defaults:
 name: synthetic
 num_channels: 58
 seq_len: 1024
+num_classes: 4
+
+train_samples: 512
+val_samples: 128
+test_samples: 128
+```
+
+---
+
+
+## `configs/dataset/synthetic/v3.yaml`
+
+**Đường dẫn đầy đủ:** `/home/infres/ttran-25/eegfm/configs/dataset/synthetic/v3.yaml`  
+**Kích thước:** `0.2 KB`  
+**Loại:** `.yaml`
+
+```yaml
+defaults:
+  - _self_
+  - synthetic/base
+
+name: synthetic
+num_channels: 15
+seq_len: 1000
 num_classes: 4
 
 train_samples: 512
@@ -560,11 +958,15 @@ best_losses:
 ## `configs/model/cbramod/pretrain.yaml`
 
 **Đường dẫn đầy đủ:** `/home/infres/ttran-25/eegfm/configs/model/cbramod/pretrain.yaml`  
-**Kích thước:** `0.0 KB`  
+**Kích thước:** `0.1 KB`  
 **Loại:** `.yaml`
 
 ```yaml
+# configs/model/eegpt/pretrain.yaml
+name: cbramod
 
+# Chọn variant
+variant: base
 ```
 
 ---
@@ -573,11 +975,26 @@ best_losses:
 ## `configs/model/cbramod/variants.yaml`
 
 **Đường dẫn đầy đủ:** `/home/infres/ttran-25/eegfm/configs/model/cbramod/variants.yaml`  
-**Kích thước:** `0.0 KB`  
+**Kích thước:** `0.2 KB`  
 **Loại:** `.yaml`
 
 ```yaml
+variants:
 
+  base:
+
+    in_dim: 200
+    out_dim: 200
+    d_model: 200
+    dim_feedforward: 800
+
+    n_layer: 6
+    nhead: 8
+
+    need_mask: true
+    mask_ratio: 0.4
+
+    patch_size: 200
 ```
 
 ---
@@ -608,11 +1025,11 @@ pretrained_ckpt: /home/infres/ttran-25/eegfm/outputs/pretraining_lmdb/eegpt/2026
 name: eegpt
 
 # Chọn variant
-variant: large
+variant: L_822
 
 # Data shape
 img_size: [19, 3200]
-patch_size: 64
+patch_size: 200
 
 # Các thông số khác sẽ được lấy từ variant
 # Có thể override ở đây nếu cần
@@ -703,6 +1120,19 @@ order_default:
 ---
 
 
+## `configs/module/cbramod_pretrain_module.yaml`
+
+**Đường dẫn đầy đủ:** `/home/infres/ttran-25/eegfm/configs/module/cbramod_pretrain_module.yaml`  
+**Kích thước:** `0.0 KB`  
+**Loại:** `.yaml`
+
+```yaml
+name: cbramod_pretrain_module
+```
+
+---
+
+
 ## `configs/module/classification_module.yaml`
 
 **Đường dẫn đầy đủ:** `/home/infres/ttran-25/eegfm/configs/module/classification_module.yaml`  
@@ -724,6 +1154,94 @@ name: classification
 
 ```yaml
 name: eegpt_pretrain_module
+```
+
+---
+
+
+## `configs/tasks/both.yaml`
+
+**Đường dẫn đầy đủ:** `/home/infres/ttran-25/eegfm/configs/tasks/both.yaml`  
+**Kích thước:** `0.1 KB`  
+**Loại:** `.yaml`
+
+```yaml
+name: both
+tasks:
+  reconstruction:
+    enabled: true
+  byol:
+    enabled: true
+```
+
+---
+
+
+## `configs/tasks/contrastive_only.yaml`
+
+**Đường dẫn đầy đủ:** `/home/infres/ttran-25/eegfm/configs/tasks/contrastive_only.yaml`  
+**Kích thước:** `0.1 KB`  
+**Loại:** `.yaml`
+
+```yaml
+name: contrastive_only
+tasks:
+  reconstruction:
+    enabled: false
+  contrastive:
+    enabled: false
+  byol:
+    enabled: true
+```
+
+---
+
+
+## `configs/tasks/reconstruction_only.yaml`
+
+**Đường dẫn đầy đủ:** `/home/infres/ttran-25/eegfm/configs/tasks/reconstruction_only.yaml`  
+**Kích thước:** `0.1 KB`  
+**Loại:** `.yaml`
+
+```yaml
+name: reconstruction_only
+tasks:
+  reconstruction:
+    enabled: true
+  contrastive:
+    enabled: false
+```
+
+---
+
+
+## `configs/weight_method/famo.yaml`
+
+**Đường dẫn đầy đủ:** `/home/infres/ttran-25/eegfm/configs/weight_method/famo.yaml`  
+**Kích thước:** `0.1 KB`  
+**Loại:** `.yaml`
+
+```yaml
+name: "famo"  
+gamma: 1e-5
+w_lr: 0.025
+max_norm: 1.0
+```
+
+---
+
+
+## `configs/weight_method/linear.yaml`
+
+**Đường dẫn đầy đủ:** `/home/infres/ttran-25/eegfm/configs/weight_method/linear.yaml`  
+**Kích thước:** `0.1 KB`  
+**Loại:** `.yaml`
+
+```yaml
+name: linear
+task_weights:
+    reconstruction: 0.5
+    byol: 0.5
 ```
 
 ---
@@ -1047,6 +1565,214 @@ srun python -m src.pretrain \
 ---
 
 
+## `script/test_cbramod.sh`
+
+**Đường dẫn đầy đủ:** `/home/infres/ttran-25/eegfm/script/test_cbramod.sh`  
+**Kích thước:** `0.4 KB`  
+**Loại:** `.sh`
+
+```bash
+#!/bin/bash
+#SBATCH --job-name=cbramod_synth
+#SBATCH --output=bash_logs/%x_%j.out
+#SBATCH --error=bash_logs/%x_%j.err
+#SBATCH --partition=P100
+#SBATCH --gres=gpu:1
+#SBATCH --time=02:00:00
+
+set -e
+set -x
+
+cd /home/infres/ttran-25/eegfm
+
+CONDA_PATH=/home/infres/ttran-25/miniconda3
+source "$CONDA_PATH/bin/activate"
+
+conda activate eegpt
+
+nvidia-smi
+
+srun python -m src.pretrain \
+    --config-name config_cbramod_test
+```
+
+---
+
+
+## `script/test_cbramod_C.sh`
+
+**Đường dẫn đầy đủ:** `/home/infres/ttran-25/eegfm/script/test_cbramod_C.sh`  
+**Kích thước:** `0.4 KB`  
+**Loại:** `.sh`
+
+```bash
+#!/bin/bash
+#SBATCH --job-name=cbramod_synth
+#SBATCH --output=bash_logs/%x_%j.out
+#SBATCH --error=bash_logs/%x_%j.err
+#SBATCH --partition=P100
+#SBATCH --gres=gpu:1
+#SBATCH --time=12:00:00
+#SBATCH --cpus-per-task=4  
+
+set -e
+set -x
+
+cd /home/infres/ttran-25/eegfm
+
+CONDA_PATH=/home/infres/ttran-25/miniconda3
+source "$CONDA_PATH/bin/activate"
+
+conda activate eegpt
+
+nvidia-smi
+
+srun python -m src.pretrain \
+    --config-name config_cbramod_test_C
+```
+
+---
+
+
+## `script/test_cbramod_R.sh`
+
+**Đường dẫn đầy đủ:** `/home/infres/ttran-25/eegfm/script/test_cbramod_R.sh`  
+**Kích thước:** `0.4 KB`  
+**Loại:** `.sh`
+
+```bash
+#!/bin/bash
+#SBATCH --job-name=cbramod_pretrain
+#SBATCH --output=bash_logs/%x_%j.out
+#SBATCH --error=bash_logs/%x_%j.err
+#SBATCH --partition=P100
+#SBATCH --gres=gpu:1
+#SBATCH --time=12:00:00
+#SBATCH --cpus-per-task=4  
+
+set -e
+set -x
+
+cd /home/infres/ttran-25/eegfm
+
+CONDA_PATH=/home/infres/ttran-25/miniconda3
+source "$CONDA_PATH/bin/activate"
+
+conda activate eegpt
+
+nvidia-smi
+
+srun python -m src.pretrain \
+    --config-name config_cbramod_test_R
+```
+
+---
+
+
+## `script/test_eegpt.sh`
+
+**Đường dẫn đầy đủ:** `/home/infres/ttran-25/eegfm/script/test_eegpt.sh`  
+**Kích thước:** `0.5 KB`  
+**Loại:** `.sh`
+
+```bash
+#!/bin/bash
+#SBATCH --job-name=eegpt_lmdb_both
+#SBATCH --output=bash_logs/%x_%j.out
+#SBATCH --error=bash_logs/%x_%j.err
+#SBATCH --partition=P100
+#SBATCH --gres=gpu:1
+#SBATCH --time=12:00:00
+#SBATCH --cpus-per-task=4       
+#SBATCH --mem=64G
+
+set -e
+set -x
+
+cd /home/infres/ttran-25/eegfm
+
+CONDA_PATH=/home/infres/ttran-25/miniconda3
+source "$CONDA_PATH/bin/activate"
+
+conda activate eegpt
+
+nvidia-smi
+
+srun python -m src.pretrain \
+    --config-name config_eegpt_pretrain_test.yaml
+```
+
+---
+
+
+## `script/test_eegpt_C.sh`
+
+**Đường dẫn đầy đủ:** `/home/infres/ttran-25/eegfm/script/test_eegpt_C.sh`  
+**Kích thước:** `0.4 KB`  
+**Loại:** `.sh`
+
+```bash
+#!/bin/bash
+#SBATCH --job-name=eegpt_lmdb
+#SBATCH --output=bash_logs/%x_%j.out
+#SBATCH --error=bash_logs/%x_%j.err
+#SBATCH --partition=P100
+#SBATCH --gres=gpu:1
+#SBATCH --time=06:00:00
+
+set -e
+set -x
+
+cd /home/infres/ttran-25/eegfm
+
+CONDA_PATH=/home/infres/ttran-25/miniconda3
+source "$CONDA_PATH/bin/activate"
+
+conda activate eegpt
+
+nvidia-smi
+
+srun python -m src.pretrain \
+    --config-name config_eegpt_pretrain_test_C.yaml
+```
+
+---
+
+
+## `script/test_eegpt_R.sh`
+
+**Đường dẫn đầy đủ:** `/home/infres/ttran-25/eegfm/script/test_eegpt_R.sh`  
+**Kích thước:** `0.4 KB`  
+**Loại:** `.sh`
+
+```bash
+#!/bin/bash
+#SBATCH --job-name=eegpt_lmdb
+#SBATCH --output=bash_logs/%x_%j.out
+#SBATCH --error=bash_logs/%x_%j.err
+#SBATCH --partition=A100
+#SBATCH --gres=gpu:1
+#SBATCH --time=06:00:00
+
+set -e
+set -x
+
+cd /home/infres/ttran-25/eegfm
+
+CONDA_PATH=/home/infres/ttran-25/miniconda3
+source "$CONDA_PATH/bin/activate"
+
+conda activate eegpt
+
+nvidia-smi
+
+srun python -m src.pretrain \
+    --config-name config_eegpt_pretrain_test_R.yaml
+```
+
+---
+
+
 ## `src/pretrain.py`
 
 **Đường dẫn đầy đủ:** `/home/infres/ttran-25/eegfm/src/pretrain.py`  
@@ -1060,8 +1786,9 @@ from omegaconf import DictConfig
 from lightning.pytorch.loggers import TensorBoardLogger
 from lightning.pytorch.callbacks import ModelCheckpoint
 from hydra.core.hydra_config import HydraConfig
+import os
 
-from src.module.registry import get_module
+from src.pretrain_module.registry import get_module
 import src.module
 from src.data.data import EEGDataModule
 
@@ -1102,9 +1829,10 @@ def main(cfg: DictConfig):
         accelerator=cfg.trainer.accelerator,
         devices=cfg.trainer.devices,
         precision=cfg.trainer.precision,
-        # accumulate_grad_batches=cfg.trainer.accumulate_grad_batches,
         logger=logger,
-        callbacks=[ckpt]
+        callbacks=[ckpt],
+        gradient_clip_val=1.0,
+        gradient_clip_algorithm="norm"
     )
 
     trainer.fit(model, datamodule=datamodule)
@@ -1401,11 +2129,36 @@ def get_dataset(name):
 ## `src/data/synthetic.py`
 
 **Đường dẫn đầy đủ:** `/home/infres/ttran-25/eegfm/src/data/synthetic.py`  
-**Kích thước:** `0.6 KB`  
+**Kích thước:** `1.3 KB`  
 **Loại:** `.py`
 
 ```python
-# src/data/synthetic.py
+# # src/data/synthetic.py
+# import torch
+# from torch.utils.data import Dataset
+# from .registry import register_dataset
+
+
+# @register_dataset("synthetic")
+# class SyntheticEEGDataset(Dataset):
+#     def __init__(self, cfg, split="train"):
+#         c = cfg
+#         if split == "train":
+#             n = c.train_samples
+#         elif split == "val":
+#             n = c.val_samples
+#         else:
+#             n = c.test_samples
+
+#         self.x = torch.randn(n, c.num_channels, c.seq_len)
+#         self.y = torch.randint(0, c.num_classes, (n,))
+
+#     def __len__(self):
+#         return len(self.y)
+
+#     def __getitem__(self, idx):
+#         return self.x[idx], self.y[idx]
+
 import torch
 from torch.utils.data import Dataset
 from .registry import register_dataset
@@ -1413,8 +2166,11 @@ from .registry import register_dataset
 
 @register_dataset("synthetic")
 class SyntheticEEGDataset(Dataset):
+
     def __init__(self, cfg, split="train"):
+
         c = cfg
+
         if split == "train":
             n = c.train_samples
         elif split == "val":
@@ -1422,8 +2178,14 @@ class SyntheticEEGDataset(Dataset):
         else:
             n = c.test_samples
 
-        self.x = torch.randn(n, c.num_channels, c.seq_len)
-        self.y = torch.randint(0, c.num_classes, (n,))
+        self.x = torch.randn(
+            n,
+            c.num_channels,
+            10,   # num patches
+            200   # patch dim
+        )
+
+        self.y = torch.zeros(n).long()
 
     def __len__(self):
         return len(self.y)
@@ -1515,7 +2277,7 @@ from .cbramod import CBraMod
 ## `src/models/cbramod/cbramod.py`
 
 **Đường dẫn đầy đủ:** `/home/infres/ttran-25/eegfm/src/models/cbramod/cbramod.py`  
-**Kích thước:** `1.8 KB`  
+**Kích thước:** `1.4 KB`  
 **Loại:** `.py`
 
 ```python
@@ -1531,12 +2293,12 @@ class CBraMod(nn.Module):
 
     def __init__(
         self,
-        img_size=(19, 30, 200),
         in_dim=200,
         out_dim=200,
         d_model=200,
         dim_feedforward=800,
-        seq_len=30,
+        seq_len=16,
+        patch_size=200,
         n_layer=12,
         nhead=8,
         need_mask=True,
@@ -1572,33 +2334,15 @@ class CBraMod(nn.Module):
 
         self.apply(self._init_weights)
 
-    def forward(self, x, return_mask=False):
-
-            mask = None
-
-            if return_mask:
-                mask = self._make_mask(x)
-
-            z = self.patch_embedding(x, mask)
-            z = self.encoder(z)
-
-            return {
-                "latent": z,
-                "mask": mask
-            }
+    def forward(self, x, mask=None):
+        z = self.patch_embedding(x, mask)
+        z = self.encoder(z)
+        return z
 
     @staticmethod
     def _init_weights(m):
         if isinstance(m, nn.Linear):
             nn.init.kaiming_normal_(m.weight)
-
-    def _make_mask(self, x):
-        bz, ch, patch, _ = x.shape
-
-        mask = torch.zeros((bz, ch, patch), device=x.device)
-        mask = mask.bernoulli_(self.mask_ratio)
-
-        return mask
 ```
 
 ---
@@ -1820,7 +2564,7 @@ def _generate_square_subsequent_mask(
 
 
 class PatchEmbedding(nn.Module):
-    def __init__(self, in_dim, out_dim, d_model, seq_len):
+    def __init__(self, in_dim, out_dim, d_model, seq_len=16):
         super().__init__()
         self.d_model = d_model
         self.positional_encoding = nn.Sequential(
@@ -1913,7 +2657,7 @@ from .eegpt_downstream import *
 ## `src/models/eegpt/eegpt.py`
 
 **Đường dẫn đầy đủ:** `/home/infres/ttran-25/eegfm/src/models/eegpt/eegpt.py`  
-**Kích thước:** `34.6 KB`  
+**Kích thước:** `35.3 KB`  
 **Loại:** `.py`
 
 ```python
@@ -2750,6 +3494,79 @@ class EEGTransformer(nn.Module):
 # Main Model
 # =========================================================
 
+# @register_model("eegpt")
+# class EEGPTModel(BaseModel):
+#     """
+#     Forward:
+#         classification / finetune -> pooled feature
+
+#     forward_pretrain:
+#         latent, predicted_latent, reconstructed_patches
+#     """
+
+#     def __init__(self, model_cfg):
+#         super().__init__(model_cfg)
+
+#         self.encoder = EEGTransformer(**model_cfg['encoder'])
+#         self.predictor = EEGTransformerPredictor(**model_cfg['predictor'])
+#         self.reconstructor = EEGTransformerReconstructor(**model_cfg['reconstructor'])
+
+#         self.target_encoder = copy.deepcopy(self.encoder)
+#         for p in self.target_encoder.parameters():
+#             p.requires_grad = False
+            
+#         self.chans_id       = self.encoder.prepare_chan_ids(use_channels_names)
+#         self.USE_LOSS_A = True
+#         self.USE_LN     = True
+#         self.USE_SKIP   = True
+                
+#     def make_masks(self, num_patchs, mC_x=12, p_n_y=0.5, p_c_y=0.2):
+        
+#         C, N = num_patchs
+        
+#         while True:
+#             mask_x = []# mN, mC
+#             mask_y = []
+#             mask_y_bx = []
+#             for i in range(N):
+#                 c_idx = torch.randperm(C) + i*C
+#                 if random.random()>p_n_y:
+#                     mask_x.append(c_idx[:mC_x])
+#                     mask_y_bx.append(c_idx[mC_x:])
+#                 else:
+#                     mask_y.append(c_idx)
+#             if len(mask_x)==0: continue
+#             if len(mask_y_bx)==0: continue
+#             mask_y_bx = torch.cat(mask_y_bx, dim=0)
+#             mask_y_bx = mask_y_bx[torch.rand(mask_y_bx.shape)<p_c_y]
+#             if len(mask_y_bx)==0: continue
+#             break
+        
+#         return torch.stack(mask_x, dim=0), torch.cat(mask_y+[mask_y_bx], dim=0)
+    
+#     def forward_target(self, x, mask_y):
+#         with torch.no_grad():
+#             h = self.target_encoder(x, self.chans_id.to(x))
+#             h = F.layer_norm(h, (h.size(-1),))  # normalize over feature-dim
+#             C, N = self.encoder.num_patches
+#             assert x.shape[-1]%N==0 and x.shape[-2]%C == 0
+#             block_size_c, block_size_n = x.shape[-2]//C, x.shape[-1]//N
+#             x = x.view(x.shape[0], C, block_size_c, N, block_size_n)
+#             x = x.permute(0, 3, 1, 2, 4).contiguous() # B, N, C, bc, bn
+#             x = x.view(x.shape[0], C, N, block_size_c * block_size_n)
+#             y = apply_mask(mask_y.to(x.device), x)
+#             if self.USE_LN:
+#                 y = F.layer_norm(y, (y.size(-1),))
+#             return h, y
+
+#     def forward_context(self, x, mask_x, mask_y):
+#         z = self.encoder(x, self.chans_id.to(x), mask_x=mask_x)
+#         z, comb_z = self.predictor(z, mask_x=mask_x)
+#         if not self.USE_SKIP:
+#             comb_z = z
+#         r = self.reconstructor(comb_z, self.chans_id.to(x), mask_y=mask_y)
+#         return z, r
+
 @register_model("eegpt")
 class EEGPTModel(BaseModel):
     """
@@ -2762,66 +3579,13 @@ class EEGPTModel(BaseModel):
 
     def __init__(self, model_cfg):
         super().__init__(model_cfg)
-
         self.encoder = EEGTransformer(**model_cfg['encoder'])
-        self.predictor = EEGTransformerPredictor(**model_cfg['predictor'])
-        self.reconstructor = EEGTransformerReconstructor(**model_cfg['reconstructor'])
-
-        self.target_encoder = copy.deepcopy(self.encoder)
-        for p in self.target_encoder.parameters():
-            p.requires_grad = False
-            
         self.chans_id       = self.encoder.prepare_chan_ids(use_channels_names)
-        self.USE_LOSS_A = True
-        self.USE_LN     = True
-        self.USE_SKIP   = True
-                
-    def make_masks(self, num_patchs, mC_x=12, p_n_y=0.5, p_c_y=0.2):
-        
-        C, N = num_patchs
-        
-        while True:
-            mask_x = []# mN, mC
-            mask_y = []
-            mask_y_bx = []
-            for i in range(N):
-                c_idx = torch.randperm(C) + i*C
-                if random.random()>p_n_y:
-                    mask_x.append(c_idx[:mC_x])
-                    mask_y_bx.append(c_idx[mC_x:])
-                else:
-                    mask_y.append(c_idx)
-            if len(mask_x)==0: continue
-            if len(mask_y_bx)==0: continue
-            mask_y_bx = torch.cat(mask_y_bx, dim=0)
-            mask_y_bx = mask_y_bx[torch.rand(mask_y_bx.shape)<p_c_y]
-            if len(mask_y_bx)==0: continue
-            break
-        
-        return torch.stack(mask_x, dim=0), torch.cat(mask_y+[mask_y_bx], dim=0)
-    
-    def forward_target(self, x, mask_y):
-        with torch.no_grad():
-            h = self.target_encoder(x, self.chans_id.to(x))
-            h = F.layer_norm(h, (h.size(-1),))  # normalize over feature-dim
-            C, N = self.encoder.num_patches
-            assert x.shape[-1]%N==0 and x.shape[-2]%C == 0
-            block_size_c, block_size_n = x.shape[-2]//C, x.shape[-1]//N
-            x = x.view(x.shape[0], C, block_size_c, N, block_size_n)
-            x = x.permute(0, 3, 1, 2, 4).contiguous() # B, N, C, bc, bn
-            x = x.view(x.shape[0], C, N, block_size_c * block_size_n)
-            y = apply_mask(mask_y.to(x.device), x)
-            if self.USE_LN:
-                y = F.layer_norm(y, (y.size(-1),))
-            return h, y
 
-    def forward_context(self, x, mask_x, mask_y):
-        z = self.encoder(x, self.chans_id.to(x), mask_x=mask_x)
-        z, comb_z = self.predictor(z, mask_x=mask_x)
-        if not self.USE_SKIP:
-            comb_z = z
-        r = self.reconstructor(comb_z, self.chans_id.to(x), mask_y=mask_y)
-        return z, r
+          
+    def forward(self, x, chan_ids=None, mask_x=None, mask_t=None):
+        # return self.encoder(x, self.chans_id.to(x), mask_x=mask_x)
+        return self.encoder(x, chan_ids=chan_ids, mask_x=mask_x, mask_t=mask_t)
 ```
 
 ---
@@ -2948,6 +3712,7 @@ class EEGPTDownstream(BaseModel):
 ```python
 from .downstream.classification_module import *
 from .eegpt.eegpt_pretrain_module import *
+from .cbramod.cbramod_pretrain_module import *
 ```
 
 ---
@@ -3070,21 +3835,24 @@ def get_module(name):
 ---
 
 
-## `src/module/cbramod/cbramod_pretrain_module.py`
+## `src/module/cbramod/cbramod_pretrain_module.bak.py`
 
-**Đường dẫn đầy đủ:** `/home/infres/ttran-25/eegfm/src/module/cbramod/cbramod_pretrain_module.py`  
-**Kích thước:** `3.1 KB`  
+**Đường dẫn đầy đủ:** `/home/infres/ttran-25/eegfm/src/module/cbramod/cbramod_pretrain_module.bak.py`  
+**Kích thước:** `9.3 KB`  
 **Loại:** `.py`
 
 ```python
 import torch
 import torch.nn.functional as F
+import torch.nn as nn
 
+from .config_builder import CBraModConfigBuilder
 from src.module.base_module import BaseModule
 from src.module.registry import register_module
 from src.models.registry import get_model
 from .task.reconstruction import ReconstructionTask
-
+from .task.contrastive import ContrastiveTask
+from src.mtl.mtl import *
 
 @register_module("cbramod_pretrain_module")
 class CBraModPretrain(BaseModule):
@@ -3092,64 +3860,109 @@ class CBraModPretrain(BaseModule):
     def __init__(self, cfg):
         super().__init__(cfg)
 
+        # 1. Build model
         builder = CBraModConfigBuilder()
         model_cfg = builder.build(cfg)
 
         model_cls = get_model(cfg.model.name)
-
         self.model = model_cls(**model_cfg)
 
-        self.loss_fn = torch.nn.MSELoss()
+        # 2. Build tasks
+        self.tasks = self._build_tasks(cfg, model_cfg)
+        if len(self.tasks) == 0:
+            raise ValueError("At least one task must be enabled!")
 
-        # ===== TASKS =====
-
-        self.tasks = nn.ModuleDict({
-
-            "reconstruction": ReconstructionTask(
+        # 3. Initialize weight method
+        self.weight_method_manager = self._build_weight_method(cfg)
+        
+        # 4. Cache for lifecycle hooks
+        self._current_losses = None
+    
+    def _build_tasks(self, cfg, model_cfg) -> nn.ModuleDict:
+        """Build only enabled tasks from config."""
+        tasks = nn.ModuleDict()
+        
+        task_configs = cfg.get("tasks", {}).get("tasks", {})
+        
+        # Reconstruction task
+        if task_configs.get("reconstruction", {}).get("enabled", False):
+            tasks["reconstruction"] = ReconstructionTask(
                 d_model=model_cfg["d_model"],
                 out_dim=model_cfg["out_dim"]
-            ),
+            )
+            print("[INFO] ✓ Reconstruction task enabled")
+        
+        # Contrastive task
+        if task_configs.get("contrastive", {}).get("enabled", False):
+            contrastive_cfg = task_configs["contrastive"]
+            tasks["contrastive"] = ContrastiveTask(
+                model=self.model,
+                d_model=model_cfg["d_model"],
+                proj_dim=contrastive_cfg.get("proj_dim", 128),
+                temperature=contrastive_cfg.get("temperature", 0.5)
+            )
+            print("[INFO] ✓ Contrastive task enabled")
+        
+        print(f"[INFO] Total active tasks: {len(tasks)}\n")
+        return tasks
 
-            # future tasks
-            # "contrastive": ContrastiveTask(...),
-            # "classification": ClassificationTask(...),
+    def _build_weight_method(self, cfg) -> WeightMethodManager:
+        """Factory method để tạo weight method từ config."""
+        method_name = cfg.get("weight_method", {}).get("name", "linear")
+        task_names = list(self.tasks.keys())
+        n_tasks = len(task_names)
+        
+        if n_tasks == 1:
+            print(f"[INFO] Single task detected: {task_names[0]}")
+            print("[INFO] Using LinearScalarWeighting with weight=1.0\n")
+            weight_method = LinearScalarWeighting(
+                n_tasks=1,
+                device=self.device,
+                task_weights={task_names[0]: 1.0}
+            )
+        elif method_name == "linear":
+            task_weights = cfg.get("weight_method", {}).get("task_weights", {})
+            # Filter weights to only include active tasks
+            filtered_weights = {k: v for k, v in task_weights.items() if k in task_names}
+            weight_method = LinearScalarWeighting(
+                n_tasks=n_tasks,
+                device=self.device,
+                task_weights=filtered_weights
+            )
+        elif method_name == "famo":
+            params = cfg.get("weight_method", {})
+            weight_method = FAMOWeighting(
+                n_tasks=n_tasks,
+                device=self.device,
+                task_names=task_names,
+                gamma=params.get("gamma", 1e-5),
+                w_lr=params.get("w_lr", 0.025),
+                max_norm=params.get("max_norm", 1.0),
+            )
+        else:
+            raise ValueError(f"Unknown weight method: {method_name}")
+        
+        print(f"[INFO] Initialized MTL Weight Method: {method_name.upper()}\n")
 
-        })
+        return WeightMethodManager(weight_method)
 
-        # optional weighting
-        self.task_weights = {
-            "reconstruction": 1.0,
-        }
+    def on_fit_start(self):
+        self.weight_method_manager.to(self.device)
 
     # =========================
     # shared step
     # =========================
     def shared_step(self, batch):
-
+        """Compute all task losses."""
         shared_output = self.model(
             batch[0],
             return_mask=True
         )
 
-        total_loss = 0
         loss_dict = {}
-
         for task_name, task in self.tasks.items():
-
             task_output = task(shared_output, batch)
-
-            task_loss = task_output["loss"]
-
-            weighted_loss = (
-                self.task_weights[task_name]
-                * task_loss
-            )
-
-            total_loss += weighted_loss
-
-            loss_dict[f"{task_name}_loss"] = task_loss
-
-        loss_dict["loss"] = total_loss
+            loss_dict[task_name] = task_output["loss"]
 
         return loss_dict
 
@@ -3157,58 +3970,478 @@ class CBraModPretrain(BaseModule):
     # train
     # =========================
     def training_step(self, batch, batch_idx):
+        """
+        Luồng training với FAMO:
+        
+        1. Compute task losses
+        2. Hook: on_before_backward (FAMO update weights ở đây)
+        3. Compute weighted loss (với weights đã update)
+        4. Return weighted loss (Lightning tự động backward + clip grad + optimizer.step)
+        """
 
+        # Step 1: Compute task losses
         loss_dict = self.shared_step(batch)
+        self._current_losses = loss_dict  # Cache cho hooks
 
-        for k, v in loss_dict.items():
+        # Step 2: Hook BEFORE backward - FAMO update weights ở đây
+        self.weight_method_manager.trigger_lifecycle_hooks(
+            "on_before_backward",
+            losses=loss_dict,
+            model=self.model,
+            batch=batch
+        )
 
+        # Step 3: Compute weighted loss với weights đã được update
+        weighted_loss = self.weight_method_manager.compute_weighted_loss(
+            losses=loss_dict,
+            model=self.model,
+            batch=batch,
+            tasks=self.tasks
+        )
+
+        # Step 4: Logging
+        # Log individual task losses
+        for task_name, loss in loss_dict.items():
             self.log(
-                f"train/{k}",
-                v,
-                prog_bar=(k == "loss"),
+                f"train/{task_name}_loss",
+                loss,
                 on_epoch=True,
                 on_step=False
             )
+        
+        # Log weighted loss
+        self.log(
+            "train/loss",
+            weighted_loss,
+            prog_bar=True,
+            on_epoch=True,
+            on_step=False
+        )
+        
+        # Log weight method metrics
+        weight_metrics = self.weight_method_manager.get_logging_dict()
+        for key, value in weight_metrics.items():
+            self.log(f"train/{key}", value, on_epoch=True, on_step=False)
+        
+        # Return weighted loss - Lightning sẽ tự động:
+        # - backward()
+        # - clip gradients (nếu set gradient_clip_val trong trainer)
+        # - optimizer.step()
+        # - prev_losses được update trong on_before_backward của step sau
+        
+        return weighted_loss
 
-        return loss_dict["loss"]
+    def on_before_optimizer_step(self, optimizer):
+        """Lightning hook - called before optimizer.step()."""
+        if self._current_losses is not None:
+            self.weight_method_manager.trigger_lifecycle_hooks(
+                "on_before_optimizer_step",
+                losses=self._current_losses,
+                model=self.model,
+                optimizer=optimizer,
+                tasks=self.tasks
+            )
+
+    def on_after_backward(self):
+        """Lightning hook - called after backward."""
+        if self._current_losses is not None:
+            self.weight_method_manager.trigger_lifecycle_hooks(
+                "on_after_backward",
+                losses=self._current_losses,
+                model=self.model,
+                tasks=self.tasks
+            )
 
     # =========================
-    # VALIDATION (FIXED)
+    # VALIDATION 
     # =========================
     def validation_step(self, batch, batch_idx):
         loss_dict = self.shared_step(batch)
-        loss = loss_dict["loss"]
-
+        
+        # Compute weighted loss (no weight updates during validation)
+        weighted_loss = self.weight_method_manager.compute_weighted_loss(
+            losses=loss_dict,
+            model=self.model,
+            batch=batch,
+            tasks=self.tasks
+        )
+        
         self.log(
-            "val_loss",
-            loss,
+            "valid_loss",
+            weighted_loss,
             prog_bar=True,
             on_step=False,
             on_epoch=True,
             sync_dist=True
         )
-
-        return loss
+        
+        return weighted_loss
 
     # =========================
     # optimizer
     # =========================
     def configure_optimizers(self):
-        optimizer = torch.optim.AdamW(
-            self.parameters(),
-            lr=self.cfg.optim.lr,
-            weight_decay=self.cfg.optim.weight_decay
-        )
-
+        # Collect all parameters
+        param_groups = [
+            {
+                "params": self.parameters(),
+                "lr": self.cfg.optimizer.lr,
+                "weight_decay": self.cfg.optimizer.weight_decay
+            }
+        ]
+        
+        # Add weight method parameters if any
+        weight_method_params = self.weight_method_manager.get_optimizer_parameters()
+        param_groups.extend(weight_method_params)
+        
+        optimizer = torch.optim.AdamW(param_groups)
+        
         scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
             optimizer,
             T_max=self.trainer.estimated_stepping_batches
         )
-
+        
         return {
             "optimizer": optimizer,
             "lr_scheduler": scheduler
         }
+    # def configure_optimizers(self):
+    #     optimizer = torch.optim.AdamW(
+    #         self.parameters(),
+    #         lr=self.cfg.optimizer.lr,
+    #         weight_decay=self.cfg.optimizer.weight_decay
+    #     )
+
+    #     scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
+    #         optimizer,
+    #         T_max=self.trainer.estimated_stepping_batches
+    #     )
+
+    #     return {
+    #         "optimizer": optimizer,
+    #         "lr_scheduler": scheduler
+    #     }
+```
+
+---
+
+
+## `src/module/cbramod/cbramod_pretrain_module.py`
+
+**Đường dẫn đầy đủ:** `/home/infres/ttran-25/eegfm/src/module/cbramod/cbramod_pretrain_module.py`  
+**Kích thước:** `10.5 KB`  
+**Loại:** `.py`
+
+```python
+import torch
+import torch.nn.functional as F
+import torch.nn as nn
+
+from .config_builder import CBraModConfigBuilder
+from src.module.base_module import BaseModule
+from src.module.registry import register_module
+from src.models.registry import get_model
+from .task.reconstruction import ReconstructionTask
+from .task.contrastive import ContrastiveTask
+from .task.byol import ContrastiveBYOLTask
+from src.mtl.mtl import *
+from src.module.cbramod.utils import augmentation, make_mask
+
+@register_module("cbramod_pretrain_module")
+class CBraModPretrain(BaseModule):
+
+    def __init__(self, cfg):
+        super().__init__(cfg)
+
+        # 1. Build model
+        builder = CBraModConfigBuilder()
+        model_cfg = builder.build(cfg)
+
+        model_cls = get_model(cfg.model.name)
+        self.model = model_cls(**model_cfg)
+
+        # 2. Build tasks
+        self.tasks = self._build_tasks(cfg, model_cfg)
+        if len(self.tasks) == 0:
+            raise ValueError("At least one task must be enabled!")
+
+        # 3. Initialize weight method
+        self.weight_method_manager = self._build_weight_method(cfg)
+        
+        # 4. Cache for lifecycle hooks
+        self._current_losses = None
+    
+    def _build_tasks(self, cfg, model_cfg) -> nn.ModuleDict:
+        """Build only enabled tasks from config."""
+        tasks = nn.ModuleDict()
+        task_configs = cfg.get("tasks", {}).get("tasks", {})
+        # ==========================================
+        # Reconstruction task
+        if task_configs.get("reconstruction", {}).get("enabled", False):
+            tasks["reconstruction"] = ReconstructionTask(
+                d_model=model_cfg["d_model"],
+                out_dim=model_cfg["out_dim"]
+            )
+            print("[INFO] ✓ Reconstruction task enabled")
+        # ==========================================
+        # Contrastive task
+        if task_configs.get("contrastive", {}).get("enabled", False):
+            contrastive_cfg = task_configs["contrastive"]
+            tasks["contrastive"] = ContrastiveTask(
+                model=self.model,
+                d_model=model_cfg["d_model"],
+                proj_dim=contrastive_cfg.get("proj_dim", 128),
+                temperature=contrastive_cfg.get("temperature", 0.5)
+            )
+            print("[INFO] ✓ Contrastive task enabled")
+        # ==========================================
+        # byol contrastive task
+        if task_configs.get("byol", {}).get("enabled", False):
+            byol_cfg = task_configs["byol"]
+            tasks["byol"] = ContrastiveBYOLTask(
+                online_encoder=self.model,
+                d_model=model_cfg["d_model"],
+                proj_dim=byol_cfg.get("proj_dim", 256),
+                hidden_dim=byol_cfg.get("hidden_dim", 512),
+                tau=byol_cfg.get("tau", 0.996)
+            )
+
+            print("[INFO] ✓ BYOL task enabled")
+        # ==========================================
+
+        print(f"[INFO] Total active tasks: {len(tasks)}\n")
+        return tasks
+
+    def _build_weight_method(self, cfg) -> WeightMethodManager:
+        """Factory method để tạo weight method từ config."""
+        method_name = cfg.get("weight_method", {}).get("name", "linear")
+        task_names = list(self.tasks.keys())
+        n_tasks = len(task_names)
+        
+        if n_tasks == 1:
+            print(f"[INFO] Single task detected: {task_names[0]}")
+            print("[INFO] Using LinearScalarWeighting with weight=1.0\n")
+            weight_method = LinearScalarWeighting(
+                n_tasks=1,
+                device=self.device,
+                task_weights={task_names[0]: 1.0}
+            )
+        elif method_name == "linear":
+            task_weights = cfg.get("weight_method", {}).get("task_weights", {})
+            # Filter weights to only include active tasks
+            filtered_weights = {k: v for k, v in task_weights.items() if k in task_names}
+            weight_method = LinearScalarWeighting(
+                n_tasks=n_tasks,
+                device=self.device,
+                task_weights=filtered_weights
+            )
+        elif method_name == "famo":
+            params = cfg.get("weight_method", {})
+            weight_method = FAMOWeighting(
+                n_tasks=n_tasks,
+                device=self.device,
+                task_names=task_names,
+                gamma=params.get("gamma", 1e-5),
+                w_lr=params.get("w_lr", 0.025),
+                max_norm=params.get("max_norm", 1.0),
+            )
+        else:
+            raise ValueError(f"Unknown weight method: {method_name}")
+        
+        print(f"[INFO] Initialized MTL Weight Method: {method_name.upper()}\n")
+
+        return WeightMethodManager(weight_method)
+
+    def on_fit_start(self):
+        self.weight_method_manager.to(self.device)
+
+    # =========================
+    # shared step
+    # =========================
+    def shared_step(self, batch):
+        """Compute all task losses."""
+        x = batch[0]
+        x_aug = augmentation(x)
+        mask = make_mask(x)
+
+        shared_output = self.model(
+            x_aug,
+            mask=mask
+        )
+
+        loss_dict = {}
+        for task_name, task in self.tasks.items():
+            task_output = task(shared_output, batch)
+            loss_dict[task_name] = task_output["loss"]
+
+        return loss_dict
+
+    # =========================
+    # train
+    # =========================
+    def training_step(self, batch, batch_idx):
+        """
+        Luồng training với FAMO:
+        
+        1. Compute task losses
+        2. Hook: on_before_backward (FAMO update weights ở đây)
+        3. Compute weighted loss (với weights đã update)
+        4. Return weighted loss (Lightning tự động backward + clip grad + optimizer.step)
+        """
+
+        # Step 1: Compute task losses
+        loss_dict = self.shared_step(batch)
+        self._current_losses = loss_dict  # Cache cho hooks
+
+        # Step 2: Hook BEFORE backward - FAMO update weights ở đây
+        self.weight_method_manager.trigger_lifecycle_hooks(
+            "on_before_backward",
+            losses=loss_dict,
+            model=self.model,
+            batch=batch
+        )
+
+        # Step 3: Compute weighted loss với weights đã được update
+        weighted_loss = self.weight_method_manager.compute_weighted_loss(
+            losses=loss_dict,
+            model=self.model,
+            batch=batch,
+            tasks=self.tasks
+        )
+
+        # Step 4: Logging
+        # Log individual task losses
+        for task_name, loss in loss_dict.items():
+            self.log(
+                f"train/{task_name}_loss",
+                loss,
+                on_epoch=True,
+                on_step=False
+            )
+        
+        # Log weighted loss
+        self.log(
+            "train/loss",
+            weighted_loss,
+            prog_bar=True,
+            on_epoch=True,
+            on_step=False
+        )
+        
+        # Log weight method metrics
+        weight_metrics = self.weight_method_manager.get_logging_dict()
+        for key, value in weight_metrics.items():
+            self.log(f"train/{key}", value, on_epoch=True, on_step=False)
+        
+        # Return weighted loss - Lightning sẽ tự động:
+        # - backward()
+        # - clip gradients (nếu set gradient_clip_val trong trainer)
+        # - optimizer.step()
+        # - prev_losses được update trong on_before_backward của step sau
+        
+        return weighted_loss
+
+    def on_before_optimizer_step(self, optimizer):
+        """Lightning hook - called before optimizer.step()."""
+        if self._current_losses is not None:
+            self.weight_method_manager.trigger_lifecycle_hooks(
+                "on_before_optimizer_step",
+                losses=self._current_losses,
+                model=self.model,
+                optimizer=optimizer,
+                tasks=self.tasks
+            )
+
+    def on_after_backward(self):
+        """Lightning hook - called after backward."""
+        if self._current_losses is not None:
+            self.weight_method_manager.trigger_lifecycle_hooks(
+                "on_after_backward",
+                losses=self._current_losses,
+                model=self.model,
+                tasks=self.tasks
+            )
+
+    # =========================
+    # VALIDATION 
+    # =========================
+    def validation_step(self, batch, batch_idx):
+        loss_dict = self.shared_step(batch)
+        
+        # Compute weighted loss (no weight updates during validation)
+        weighted_loss = self.weight_method_manager.compute_weighted_loss(
+            losses=loss_dict,
+            model=self.model,
+            batch=batch,
+            tasks=self.tasks
+        )
+        
+        self.log(
+            "valid_loss",
+            weighted_loss,
+            prog_bar=True,
+            on_step=False,
+            on_epoch=True,
+            sync_dist=True
+        )
+        
+        return weighted_loss
+
+    # =========================
+    # optimizer
+    # =========================
+    def configure_optimizers(self):
+        # Collect all parameters
+        param_groups = [
+            {
+                "params": self.parameters(),
+                "lr": self.cfg.optimizer.lr,
+                "weight_decay": self.cfg.optimizer.weight_decay
+            }
+        ]
+        
+        # Add weight method parameters if any
+        weight_method_params = self.weight_method_manager.get_optimizer_parameters()
+        param_groups.extend(weight_method_params)
+        
+        optimizer = torch.optim.AdamW(param_groups)
+        
+        scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
+            optimizer,
+            T_max=self.trainer.estimated_stepping_batches
+        )
+        
+        return {
+            "optimizer": optimizer,
+            "lr_scheduler": scheduler
+        }
+    # def configure_optimizers(self):
+    #     optimizer = torch.optim.AdamW(
+    #         self.parameters(),
+    #         lr=self.cfg.optimizer.lr,
+    #         weight_decay=self.cfg.optimizer.weight_decay
+    #     )
+
+    #     scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
+    #         optimizer,
+    #         T_max=self.trainer.estimated_stepping_batches
+    #     )
+
+    #     return {
+    #         "optimizer": optimizer,
+    #         "lr_scheduler": scheduler
+    #     }
+
+    def on_train_batch_end(self, outputs, batch, batch_idx):
+        """Lightning hook - called after training_step."""
+        # Propagate lifecycle hook to all tasks
+        for task_name, task in self.tasks.items():
+            if hasattr(task, 'on_train_batch_end'):
+                task.on_train_batch_end(
+                    outputs=outputs,
+                    batch=batch,
+                    batch_idx=batch_idx
+                )
 ```
 
 ---
@@ -3217,7 +4450,7 @@ class CBraModPretrain(BaseModule):
 ## `src/module/cbramod/config_builder.py`
 
 **Đường dẫn đầy đủ:** `/home/infres/ttran-25/eegfm/src/module/cbramod/config_builder.py`  
-**Kích thước:** `1.5 KB`  
+**Kích thước:** `1.2 KB`  
 **Loại:** `.py`
 
 ```python
@@ -3246,30 +4479,137 @@ class CBraModConfigBuilder:
                 base_cfg[k] = v
 
         # derive values
-        img_size = base_cfg["img_size"]
-        patch_size = base_cfg["patch_size"]
-
-        seq_len = img_size[1] // patch_size
-        num_patches = (img_size[0], seq_len)
+        seq_len = base_cfg["seq_len"]
 
         return {
             # core model config
-            "img_size": img_size,
-            "patch_size": patch_size,
             "seq_len": seq_len,
-            "num_patches": num_patches,
-
             "in_dim": base_cfg["in_dim"],
             "out_dim": base_cfg["out_dim"],
             "d_model": base_cfg["d_model"],
             "dim_feedforward": base_cfg["dim_feedforward"],
             "n_layer": base_cfg["n_layer"],
             "nhead": base_cfg["nhead"],
-
-            # 👉 model-owned behavior (IMPORTANT FIX)
             "need_mask": base_cfg.get("need_mask", True),
             "mask_ratio": base_cfg.get("mask_ratio", 0.5),
         }
+```
+
+---
+
+
+## `src/module/cbramod/utils.py`
+
+**Đường dẫn đầy đủ:** `/home/infres/ttran-25/eegfm/src/module/cbramod/utils.py`  
+**Kích thước:** `3.5 KB`  
+**Loại:** `.py`
+
+```python
+
+import random
+import torch
+
+def augmentation(x, prob=0.25):
+    """
+    Đầu vào x đã là 4 chiều chuẩn: [B, C, N, patch_size]
+    Hàm áp dụng DUY NHẤT một phép tăng cường cho mỗi batch.
+    """
+    # 1. Trích xuất kích thước từ Tensor 4 chiều
+    B, C, N, patch_size = x.shape
+    T = N * patch_size  # Tổng số điểm thời gian (Time-steps)
+    device = x.device
+
+    # 2. Ép phẳng tạm thời về 3 chiều [B, C, T] để thực hiện biến đổi
+    x_3d = x.view(B, C, T)
+    out = x_3d.clone()
+
+    r = random.random()
+
+    # -------------------------------
+    # 1) Magnitude scaling (25% cơ hội)
+    # -------------------------------
+    if r < prob:
+        scale = torch.empty(1, device=device).uniform_(0.5, 2.0)
+        out = out * scale
+        flag = "scale_mag"
+
+    # -------------------------------
+    # 2) Gaussian noise (25% cơ hội)
+    # -------------------------------
+    elif r < 2 * prob:
+        noise = torch.randn_like(out) * 0.2  
+        out = out + noise
+        flag = "noise"
+
+    # -------------------------------
+    # 3) Interpolation (25% cơ hội)
+    # -------------------------------
+    elif r < 3 * prob:
+        delete_prob = 0.2
+        keep_n = int(T * (1 - delete_prob))
+        if keep_n > 0:
+            idx = torch.randperm(T, device=device)[:keep_n]
+            idx = torch.sort(idx)[0]
+            values_kept = out[:, :, idx]
+            t = torch.arange(T, dtype=out.dtype, device=device)
+            t_kept = idx.to(out.dtype)
+
+            left_idx = torch.searchsorted(t_kept, t, right=True) - 1
+
+            is_before = left_idx < 0
+            is_after = left_idx >= (keep_n - 1)
+            is_interp = ~(is_before | is_after)
+
+            if is_before.any():
+                num_before = is_before.sum()
+                out[:, :, is_before] = values_kept[:, :, 0:1].repeat(1, 1, num_before)
+
+            if is_after.any():
+                num_after = is_after.sum()
+                out[:, :, is_after] = values_kept[:, :, -1:].repeat(1, 1, num_after)
+
+            if is_interp.any():
+                left_interp = left_idx[is_interp]
+                t_interp = t[is_interp]
+                t_left = t_kept[left_interp]
+                t_right = t_kept[left_interp + 1]
+                delta = t_right - t_left
+                delta = torch.where(delta == 0, torch.ones_like(delta), delta)
+                weight = (t_interp - t_left) / delta
+
+                values_left = values_kept[:, :, left_interp]
+                values_right = values_kept[:, :, left_interp + 1]
+                values_interp = values_left + weight[None, None, :] * (values_right - values_left)
+                out[:, :, is_interp] = values_interp
+        flag = "interpolate"
+
+    # -------------------------------
+    # 4) Frequency masking (25% cơ hội)
+    # -------------------------------
+    elif r < 4 * prob:
+        fft = torch.fft.rfft(out, dim=2)
+        freq_bins = fft.shape[2]
+        mask_n = int(freq_bins * 0.2)
+        mask_idx = torch.randperm(freq_bins, device=device)[:mask_n]
+        fft[:, :, mask_idx] = 0
+        out = torch.fft.irfft(fft, n=T, dim=2)
+        flag = "freq_mask"
+    else:
+        flag = "keep"
+
+    # 3. KHÔI PHỤC LẠI dạng 4 chiều [B, C, N, patch_size] cho out
+    out = out.view(B, C, N, patch_size)
+        
+    return out
+
+def make_mask(x, mask_ratio=0.4):
+        # print(x.shape)
+        bz, ch, patch, _ = x.shape
+
+        mask = torch.zeros((bz, ch, patch), device=x.device)
+        mask = mask.bernoulli_(mask_ratio)
+
+        return mask
 ```
 
 ---
@@ -3282,7 +4622,7 @@ class CBraModConfigBuilder:
 **Loại:** `.py`
 
 ```python
-import torch.nn
+import torch.nn as nn
 
 class BaseTask(nn.Module):
 
@@ -3293,14 +4633,321 @@ class BaseTask(nn.Module):
 ---
 
 
-## `src/module/cbramod/task/reconstruction.py`
+## `src/module/cbramod/task/byol.py`
 
-**Đường dẫn đầy đủ:** `/home/infres/ttran-25/eegfm/src/module/cbramod/task/reconstruction.py`  
-**Kích thước:** `0.7 KB`  
+**Đường dẫn đầy đủ:** `/home/infres/ttran-25/eegfm/src/module/cbramod/task/byol.py`  
+**Kích thước:** `6.5 KB`  
 **Loại:** `.py`
 
 ```python
-import torch.nn
+# ============================================
+# contrastive_byol_task.py
+# ============================================
+
+import copy
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+
+from .base_task import BaseTask
+from src.module.cbramod.utils import augmentation, make_mask
+
+# ============================================
+# Projection Head
+# ============================================
+
+class ProjectionHead(nn.Module):
+
+    def __init__(self, in_dim, hidden_dim=512, out_dim=256):
+        super().__init__()
+        self.net = nn.Sequential(
+            nn.Linear(in_dim, hidden_dim),
+            nn.BatchNorm1d(hidden_dim),
+            nn.GELU(),
+            nn.Linear(hidden_dim, out_dim)
+        )
+
+    def forward(self, x):
+        return self.net(x)
+
+
+# ============================================
+# Predictor
+# ============================================
+
+class Predictor(nn.Module):
+
+    def __init__(self, in_dim=256, hidden_dim=512):
+        super().__init__()
+        self.net = nn.Sequential(
+            nn.Linear(in_dim, hidden_dim),
+            nn.BatchNorm1d(hidden_dim),
+            nn.GELU(),
+            nn.Linear(hidden_dim, in_dim)
+        )
+
+    def forward(self, x):
+        return self.net(x)
+
+
+# ============================================
+# BYOL Task
+# ============================================
+
+class ContrastiveBYOLTask(BaseTask):
+
+    def __init__(
+        self,
+        online_encoder,
+        d_model,
+        proj_dim=256,
+        hidden_dim=512,
+        tau=0.996
+    ):
+        super().__init__()
+
+        self.tau = tau
+
+        # =====================================
+        # ONLINE ENCODER REFERENCE
+        # =====================================
+        self.online_encoder = online_encoder
+
+        # =====================================
+        # TARGET ENCODER (EMA)
+        # =====================================
+        self.target_encoder = copy.deepcopy(online_encoder)
+        for p in self.target_encoder.parameters():
+            p.requires_grad = False
+
+        # =====================================
+        # ONLINE PROJECTOR
+        # =====================================
+        self.projector = ProjectionHead(
+            in_dim=d_model,
+            hidden_dim=hidden_dim,
+            out_dim=proj_dim
+        )
+
+        # =====================================
+        # ONLINE PREDICTOR
+        # =====================================
+        self.predictor = Predictor(
+            in_dim=proj_dim,
+            hidden_dim=hidden_dim
+        )
+
+        # =====================================
+        # TARGET PROJECTOR
+        # =====================================
+        self.target_projector = copy.deepcopy(self.projector)
+        for p in self.target_projector.parameters():
+            p.requires_grad = False
+
+    # ============================================
+    # Pooling
+    # ============================================
+
+    def pool(self, h):
+        """
+        h: [B, C, N, D] hoặc [B, N, D] phụ thuộc vào chiều của tensor đầu ra.
+        Đoạn code gốc: out_enc.mean(dim=[1, 2]) áp dụng cho tensor 4D [B, C, N, D]
+        """
+        if h.dim() == 4:
+            return h.mean(dim=(1, 2))
+        elif h.dim() == 3:
+            return h.mean(dim=1)
+        return h
+
+    # ============================================
+    # BYOL LOSS
+    # ============================================
+
+    def byol_loss(self, p, z):
+        p = F.normalize(p, dim=-1)
+        z = F.normalize(z, dim=-1)
+        # Cosine similarity loss quy đổi: 2 - 2 * cos_sim
+        return 2 - 2 * (p * z.detach()).sum(dim=-1)
+
+    # ============================================
+    # EMA UPDATE
+    # ============================================
+
+    @torch.no_grad()
+    def update_ema(self):
+        # encoder EMA
+        for online, target in zip(
+            self.online_encoder.parameters(),
+            self.target_encoder.parameters()
+        ):
+            target.data.mul_(self.tau).add_(online.data, alpha=1 - self.tau)
+
+        # projector EMA
+        for online, target in zip(
+            self.projector.parameters(),
+            self.target_projector.parameters()
+        ):
+            target.data.mul_(self.tau).add_(online.data, alpha=1 - self.tau)
+
+    # ============================================
+    # Lifecycle hook
+    # ============================================
+
+    def on_train_batch_end(self, **kwargs):
+        self.update_ema()
+
+    # ============================================
+    # FORWARD (Chuẩn hóa theo flow code gốc)
+    # ============================================
+
+    def forward(self, shared_output, batch):
+        """
+        shared_output: out_enc của nhánh Online nhận x_aug [B, C, N, D]
+        batch[0]: Dữ liệu gốc x (chưa qua augmentation)
+        """
+        x = batch[0]
+
+        # =====================================
+        # 1. NHÁNH ONLINE (Từ x_aug)
+        # =====================================
+        # shared_output chính là kết quả của Online Encoder khi nhận x_aug
+        h_online = self.pool(shared_output)    # -> [B, D]
+        z_online = self.projector(h_online)    # -> [B, proj_dim]
+        p_online = self.predictor(z_online)    # -> [B, proj_dim] (z_cons trong code cũ)
+
+        # =====================================
+        # 2. NHÁNH TARGET EMA (Từ x sạch)
+        # =====================================
+        with torch.no_grad():
+            # Tạo mask nhẹ cho nhánh EMA giống hệt tỷ lệ code trước (mask / 4)
+            # Giả định mask gốc là 0.2 thì ema_mask_ratio là 0.05
+            ema_mask = make_mask(x, 0.05) 
+            
+            # Khởi chạy Target Encoder trên dữ liệu gốc x
+            h_target_enc = self.target_encoder(x, mask=ema_mask)
+            
+            # Xử lý nếu đầu ra của target_encoder trả về dict hoặc tensor thuần
+            if isinstance(h_target_enc, dict):
+                h_target_enc = h_target_enc.get("latent", h_target_enc.get("out_enc", h_target_enc))
+                
+            h_target = self.pool(h_target_enc)      # -> [B, D]
+            z_target = self.target_projector(h_target) # -> [B, proj_dim] (z_ema_cons trong code cũ)
+
+        # =====================================
+        # 3. TÍNH TOÁN LOSS
+        # =====================================
+        # Ép đầu ra dự đoán của mạng Online (p_online) trùng với vector neo của mạng Target (z_target)
+        loss = self.byol_loss(p_online, z_target).mean()
+
+        return {
+            "loss": loss
+        }
+```
+
+---
+
+
+## `src/module/cbramod/task/contrastive.py`
+
+**Đường dẫn đầy đủ:** `/home/infres/ttran-25/eegfm/src/module/cbramod/task/contrastive.py`  
+**Kích thước:** `1.9 KB`  
+**Loại:** `.py`
+
+```python
+import torch.nn as nn
+import torch.nn.functional as F
+from .base_task import BaseTask
+
+class ContrastiveTask(BaseTask):
+
+    def __init__(self, model, d_model, proj_dim=128, temperature=0.5):
+        super().__init__()
+
+        self.model = model
+        self.projector = ProjectionHead(d_model, proj_dim)
+        self.loss_fn = NTXentLoss(temperature)
+
+    def forward(self, shared_output, batch):
+
+        # 1. create 2 views
+        x1 = batch[0]
+        x2 = augmentation(batch[0])
+
+        # 2. forward backbone
+        h1 = self.model(x1, return_mask=False)["latent"]
+        h2 = self.model(x2, return_mask=False)["latent"]
+
+        # 3. pooling
+        h1 = h1.mean(dim=1)
+        h2 = h2.mean(dim=1)
+
+        # 4. projection
+        z1 = self.projector(h1)
+        z2 = self.projector(h2)
+
+        # 5. loss
+        loss = self.loss_fn(z1, z2)
+
+        return {"loss": loss}
+
+class ProjectionHead(nn.Module):
+    def __init__(self, d_model, proj_dim=128):
+        super().__init__()
+        self.net = nn.Sequential(
+            nn.Linear(d_model, d_model),
+            nn.ReLU(),
+            nn.Linear(d_model, proj_dim)
+        )
+
+    def forward(self, x):
+        return self.net(x)
+
+class NTXentLoss(nn.Module):
+    def __init__(self, temperature=0.5):
+        super().__init__()
+        self.t = temperature
+
+    def forward(self, z1, z2):
+        """
+        z1, z2: [B, D]
+        """
+        B = z1.size(0)
+
+        z1 = F.normalize(z1, dim=1)
+        z2 = F.normalize(z2, dim=1)
+
+        z1 = z1.mean(dim=1)
+        z2 = z2.mean(dim=1)
+
+        z = torch.cat([z1, z2], dim=0)  # [2B, D]
+
+        sim = torch.matmul(z, z.T) / self.t  # [2B, 2B]
+
+        mask = torch.eye(2 * B, device=z.device).bool()
+        sim = sim.masked_fill(mask, -1e9)
+
+        pos = torch.cat([
+            torch.arange(B, 2*B),
+            torch.arange(0, B)
+        ]).to(z.device)
+
+        loss = F.cross_entropy(sim, pos)
+        return loss
+```
+
+---
+
+
+## `src/module/cbramod/task/reconstruction.py`
+
+**Đường dẫn đầy đủ:** `/home/infres/ttran-25/eegfm/src/module/cbramod/task/reconstruction.py`  
+**Kích thước:** `0.6 KB`  
+**Loại:** `.py`
+
+```python
+import torch.nn as nn
+
+from .base_task import BaseTask
 
 class ReconstructionTask(BaseTask):
 
@@ -3310,28 +4957,17 @@ class ReconstructionTask(BaseTask):
         self.decoder = nn.Sequential(
             nn.Linear(d_model, d_model*4),
             nn.GELU(),
-            nn.Linear(d_model, out_dim)
+            nn.LayerNorm(d_model*4),
+            nn.Linear(d_model*4, out_dim)
         )
 
         self.loss_fn = nn.MSELoss()
 
     def forward(self, shared_output, batch):
-
-        z = shared_output["latent"]
-        mask = shared_output["mask"]
-
-        x = batch[0]
-
+        z = shared_output
+        target = batch[0]
         pred = self.decoder(z)
-
-        if mask is not None:
-            pred = pred[mask == 1]
-            target = x[mask == 1]
-        else:
-            target = x
-
         loss = self.loss_fn(pred, target)
-
         return {
             "loss": loss,
             "pred": pred
@@ -3542,7 +5178,7 @@ class EEGPTConfigBuilder:
 ## `src/module/eegpt/eegpt_pretrain_module.py`
 
 **Đường dẫn đầy đủ:** `/home/infres/ttran-25/eegfm/src/module/eegpt/eegpt_pretrain_module.py`  
-**Kích thước:** `6.5 KB`  
+**Kích thước:** `5.6 KB`  
 **Loại:** `.py`
 
 ```python
@@ -3573,7 +5209,6 @@ class EEGPretrain(BaseModule):
         # ===== loss weighting strategy =====
         weighting_cls = get_weighting(cfg.weighting.name)
         self.loss_weighting = weighting_cls(
-            # loss_names=["loss1", "loss2", "contrast"],
             loss_names=["loss1", "loss2"],
             **cfg.weighting.get("params", {})
         )
@@ -3602,12 +5237,10 @@ class EEGPretrain(BaseModule):
         """Compute individual losses WITHOUT weighting"""
         loss1 = F.mse_loss(h, z)
         loss2 = F.mse_loss(y, r)
-        # loss_con = self._contrastive_loss(z, h)
 
         return {
             "loss1": loss1,
             "loss2": loss2,
-            # "contrast": loss_con,
         }
     
     # ==============================================================
@@ -3726,30 +5359,6 @@ class EEGPretrain(BaseModule):
                 "interval": "step",
             },
         }
-
-    # ==============================================================
-    # Contrastive
-    # =============================================================
-    # def _contrastive_loss(self, z, h):
-
-    #     def _pool_tokens(x):
-    #         if x.dim() == 4:
-    #             x = x.squeeze(2)
-    #         return x.mean(dim=1)
-
-    #     z = _pool_tokens(z)
-    #     h = _pool_tokens(h)
-
-    #     z = F.normalize(z, dim=-1)
-    #     h = F.normalize(h, dim=-1)
-
-    #     logits = torch.matmul(z, h.T) / self.temperature
-    #     labels = torch.arange(z.size(0), device=z.device)
-
-    #     return 0.5 * (
-    #         F.cross_entropy(logits, labels) +
-    #         F.cross_entropy(logits.T, labels)
-    #     )
 ```
 
 ---
@@ -3825,6 +5434,2563 @@ class GradientMonitor:
                 cos,
                 on_step=True
             )
+```
+
+---
+
+
+## `src/mtl/mtl.py`
+
+**Đường dẫn đầy đủ:** `/home/infres/ttran-25/eegfm/src/mtl/mtl.py`  
+**Kích thước:** `10.5 KB`  
+**Loại:** `.py`
+
+```python
+# ============================================
+# 1. Base Weight Method Interface
+# ============================================
+from abc import ABC, abstractmethod
+from typing import Dict, List, Optional, Any
+import torch
+import torch.nn as nn
+from pytorch_lightning import LightningModule
+
+class BaseWeightMethod(ABC, nn.Module):
+    """
+    Base class cho tất cả weight methods.
+    Định nghĩa các lifecycle hooks mà Lightning module có thể gọi.
+    """
+    
+    def __init__(self, n_tasks: int, device: torch.device):
+        super().__init__()
+        self.n_tasks = n_tasks
+        
+    @abstractmethod
+    def compute_weighted_loss(
+        self, 
+        losses: Dict[str, torch.Tensor],
+        model: nn.Module,
+        **kwargs
+    ) -> torch.Tensor:
+        """
+        Tính weighted loss từ dict of task losses.
+        
+        Args:
+            losses: Dict[task_name, loss_value]
+            model: The model being trained
+            
+        Returns:
+            weighted_loss: Scalar tensor
+        """
+        pass
+    
+    def on_before_backward(
+        self,
+        losses: Dict[str, torch.Tensor],
+        model: nn.Module,
+        **kwargs
+    ) -> None:
+        """Hook được gọi trước khi backward pass."""
+        pass
+    
+    def on_after_backward(
+        self,
+        losses: Dict[str, torch.Tensor],
+        model: nn.Module,
+        **kwargs
+    ) -> None:
+        """Hook được gọi sau backward nhưng trước optimizer step."""
+        pass
+    
+    def on_before_optimizer_step(
+        self,
+        losses: Dict[str, torch.Tensor],
+        model: nn.Module,
+        optimizer: torch.optim.Optimizer,
+        **kwargs
+    ) -> None:
+        """Hook được gọi trước optimizer.step()."""
+        pass
+    
+    def get_optimizer_parameters(self) -> List[Dict[str, Any]]:
+        """
+        Trả về list of parameter groups để thêm vào optimizer.
+        Cho phép weight method có learnable parameters.
+        """
+        return []
+    
+    def get_logging_dict(self) -> Dict[str, float]:
+        """Trả về metrics để log."""
+        return {}
+
+
+# ============================================
+# 2. Concrete Weight Methods
+# ============================================
+
+class LinearScalarWeighting(BaseWeightMethod):
+    """Simple fixed weights."""
+    
+    def __init__(
+        self, 
+        n_tasks: int, 
+        device: torch.device,
+        task_weights: Optional[Dict[str, float]] = None
+    ):
+        super().__init__(n_tasks, device)
+        self.task_weights = task_weights or {}
+        
+    def compute_weighted_loss(
+        self, 
+        losses: Dict[str, torch.Tensor],
+        model: nn.Module,
+        **kwargs
+    ) -> torch.Tensor:
+        total_loss = 0.0
+        for task_name, loss in losses.items():
+            weight = self.task_weights.get(task_name, 1.0)
+            total_loss += weight * loss
+            print(f"Task: {task_name:15} | Weight: {weight:<5} | Unweighted Loss: {loss.item():.4f}")
+            
+        # In ra loss tổng
+        print(f"=> TOTAL LOSS: {total_loss.item():.4f}")
+        print("-" * 32)
+        return total_loss
+
+
+class FAMOWeighting(BaseWeightMethod):
+    """
+    FAMO weight method với update TRƯỚC backward pass.
+    
+    Luồng:
+    1. Step đầu tiên:
+       - Tính losses dict
+       - Khởi tạo weights (logits = 0, softmax = [0.5, 0.5, ...])
+       - compute_weighted_loss với weights ban đầu
+       - backward + optimizer.step()
+       - Lưu losses làm prev_losses
+    
+    2. Step tiếp theo:
+       - Tính losses dict
+       - Update weights dựa trên prev_losses và losses hiện tại (trong on_before_backward)
+       - compute_weighted_loss với weights đã update
+       - backward + optimizer.step()
+       - Lưu losses làm prev_losses
+    
+    Note: min_losses là lower bound lý thuyết của mỗi task (thường = 0),
+          KHÔNG phải loss thực tế ở step đầu tiên.
+    """
+    
+    def __init__(
+        self,
+        n_tasks: int,
+        device: torch.device,
+        task_names: List[str],
+        gamma: float = 1e-5,
+        w_lr: float = 0.025,
+        max_norm: float = 1.0,
+        min_losses: Optional[torch.Tensor] = None,  # Có thể truyền vào hoặc mặc định = 0
+    ):
+        super().__init__(n_tasks, device)
+        self.task_names = task_names
+        self.gamma = gamma
+        self.w_lr = w_lr
+        self.max_norm = max_norm
+        
+        # Initialize FAMO parameters - logits ban đầu = 0
+        self.w = nn.Parameter(
+            torch.zeros(n_tasks),
+            requires_grad=True
+        )
+        self.w_opt = torch.optim.Adam(
+            [self.w], 
+            lr=w_lr, 
+            weight_decay=gamma
+        )
+        
+        # Cache
+        self.prev_losses = None  # Lưu losses từ step trước
+        self.current_weights = None  # Lưu weights hiện tại để log
+        self.is_first_step = True  # Flag để biết step đầu tiên
+        
+        # Min losses = lower bound lý thuyết (thường = 0 cho tất cả tasks)
+        if min_losses is None:
+            self.register_buffer("min_losses", torch.zeros(n_tasks))
+        else:
+            self.register_buffer("min_losses", min_losses)
+        
+        print(f"[FAMO] Initialized with min_losses (lower bounds): {self.min_losses}")
+    
+    def on_before_backward(
+        self,
+        losses: Dict[str, torch.Tensor],
+        model: nn.Module,
+        **kwargs
+    ) -> None:
+        """
+        FAMO weight update - chạy TRƯỚC backward pass.
+        
+        Luồng:
+        - Step đầu tiên: chỉ lưu losses, không update weights
+        - Step tiếp theo: update weights dựa trên prev_losses và losses hiện tại
+        """
+        # Convert dict to tensor theo thứ tự task_names
+        loss_tensor = torch.stack([
+            losses[name] for name in self.task_names
+        ])
+        
+        if self.is_first_step:
+            # Step đầu tiên: chỉ lưu losses, không update
+            self.is_first_step = False
+            print(f"[FAMO] First step - losses: {loss_tensor}")
+        else:
+            # Step tiếp theo: update weights
+            if self.prev_losses is not None:
+                # Tính delta = log(L_t-1 - L_min) - log(L_t - L_min)
+                # L_min là lower bound (thường = 0), không phải loss thực tế
+                delta = (
+                    (self.prev_losses - self.min_losses + 1e-8).log() - 
+                    (loss_tensor.detach() - self.min_losses + 1e-8).log()
+                )
+                
+                # Tính gradient của softmax(w) theo w
+                with torch.enable_grad():
+                    d = torch.autograd.grad(
+                        torch.softmax(self.w, dim=-1),
+                        self.w,
+                        grad_outputs=delta.detach()
+                    )[0]
+                
+                # Update w parameters
+                self.w_opt.zero_grad()
+                self.w.grad = d
+                self.w_opt.step()
+        
+        # Lưu losses hiện tại làm prev_losses cho step sau
+        self.prev_losses = loss_tensor.detach()
+    
+    def compute_weighted_loss(
+        self, 
+        losses: Dict[str, torch.Tensor],
+        model: nn.Module,
+        **kwargs
+    ) -> torch.Tensor:
+        """
+        Tính weighted loss bằng FAMO formula.
+        Được gọi SAU on_before_backward (weights đã được update).
+        """
+        # Convert dict to tensor
+        loss_tensor = torch.stack([
+            losses[name] for name in self.task_names
+        ])
+        
+        # FAMO weighting: z = softmax(w)
+        z = torch.softmax(self.w, dim=-1)
+        
+        # D_i = L_i - L_min + eps
+        D = loss_tensor - self.min_losses + 1e-8
+
+        print(f"D: {D}")
+        
+        # c = sum(z_i / D_i) - normalization constant
+        c = (z / D).sum().detach()
+        
+        # Weighted loss = sum(log(D_i) * z_i / c)
+        weighted_loss = (D.log() * z / c).sum()
+        
+        # Cache weights for logging
+        self.current_weights = z.detach()
+
+        print(f"loss components: {loss_tensor} - average loss: {loss_tensor.mean()}")
+        print(f"current weights: {self.current_weights}")
+        print(f"gradient loss: {weighted_loss}")
+        
+        return weighted_loss
+    
+    def get_optimizer_parameters(self) -> List[Dict[str, Any]]:
+        """FAMO không cần thêm params vào main optimizer (có optimizer riêng)."""
+        return []
+    
+    def get_logging_dict(self) -> Dict[str, float]:
+        """Return current weights for logging."""
+        if self.current_weights is None:
+            return {}
+        
+        log_dict = {}
+        for i, task_name in enumerate(self.task_names):
+            log_dict[f"weight/{task_name}"] = self.current_weights[i].item()
+        
+        # Optional: log raw logits để debug
+        # log_dict["weight/logits_norm"] = self.w.norm().item()
+        
+        return log_dict
+
+
+# ============================================
+# 3. Weight Method Manager
+# ============================================
+
+class WeightMethodManager(nn.Module):
+    """
+    Quản lý weight method và expose unified interface cho Lightning.
+    """
+    
+    def __init__(self, weight_method: BaseWeightMethod):
+        super().__init__()
+        self.weight_method = weight_method
+        
+    def compute_weighted_loss(
+        self,
+        losses: Dict[str, torch.Tensor],
+        model: nn.Module,
+        **kwargs
+    ) -> torch.Tensor:
+        """Delegate to weight method."""
+        return self.weight_method.compute_weighted_loss(
+            losses, model, **kwargs
+        )
+    
+    def trigger_lifecycle_hooks(
+        self,
+        hook_name: str,
+        losses: Dict[str, torch.Tensor],
+        model: nn.Module,
+        **kwargs
+    ) -> None:
+        """
+        Trigger một lifecycle hook nếu weight method implement nó.
+        
+        Args:
+            hook_name: Tên của hook (e.g., 'on_before_backward')
+            losses: Task losses
+            model: The model
+            **kwargs: Additional context
+        """
+        hook_method = getattr(self.weight_method, hook_name, None)
+        if hook_method and callable(hook_method):
+            hook_method(losses, model, **kwargs)
+    
+    def get_optimizer_parameters(self) -> List[Dict[str, Any]]:
+        """Get learnable parameters from weight method."""
+        return self.weight_method.get_optimizer_parameters()
+    
+    def get_logging_dict(self) -> Dict[str, float]:
+        """Get logging metrics."""
+        return self.weight_method.get_logging_dict()
+```
+
+---
+
+
+## `src/pretrain_module/__init__.py`
+
+**Đường dẫn đầy đủ:** `/home/infres/ttran-25/eegfm/src/pretrain_module/__init__.py`  
+**Kích thước:** `0.1 KB`  
+**Loại:** `.py`
+
+```python
+from .eegpt.eegpt_pretrain_module import *
+from .cbramod.cbramod_pretrain_module import *
+```
+
+---
+
+
+## `src/pretrain_module/base_module.py`
+
+**Đường dẫn đầy đủ:** `/home/infres/ttran-25/eegfm/src/pretrain_module/base_module.py`  
+**Kích thước:** `10.1 KB`  
+**Loại:** `.py`
+
+```python
+# src/pretrain_module/base_module.py
+import lightning as L
+import torch
+import torch.nn as nn
+from abc import ABC, abstractmethod
+from typing import Dict, Any, List, Optional
+from src.mtl.mtl import WeightMethodManager
+
+class BaseModule(L.LightningModule, ABC):
+    """
+    Abstract base class for all pretraining modules.
+    
+    Subclasses must implement:
+    - _build_model()
+    - _build_tasks()
+    - shared_step()
+    """
+    
+    def __init__(self, cfg):
+        super().__init__()
+        self.cfg = cfg
+        
+        # Will be initialized by subclasses
+        self.model = None
+        self.tasks = None
+        self.weight_method_manager = None
+        self._current_losses = None
+    
+    @abstractmethod
+    def _build_model(self, cfg) -> nn.Module:
+        """
+        Build and return the main model.
+        
+        Args:
+            cfg: Configuration object
+            
+        Returns:
+            nn.Module: The main model
+        """
+        pass
+    
+    @abstractmethod
+    def _build_tasks(self, cfg, model_cfg: Optional[Dict] = None) -> nn.ModuleDict:
+        """
+        Build and return task modules.
+        
+        Args:
+            cfg: Configuration object
+            model_cfg: Optional model configuration dict
+            
+        Returns:
+            nn.ModuleDict: Dictionary of task modules
+        """
+        pass
+    
+    @abstractmethod
+    def shared_step(self, batch) -> Dict[str, torch.Tensor]:
+        """
+        Compute all task losses for a batch.
+        
+        Args:
+            batch: Input batch
+            
+        Returns:
+            Dict[str, torch.Tensor]: Dictionary mapping task names to loss values
+        """
+        pass
+    
+    def _build_weight_method(self, cfg) -> WeightMethodManager:
+        """
+        Factory method to create weight method from config.
+        Can be overridden by subclasses if needed.
+        """
+        from src.mtl.mtl import LinearScalarWeighting, FAMOWeighting
+        
+        method_name = cfg.get("weight_method", {}).get("name", "linear")
+        task_names = list(self.tasks.keys())
+        n_tasks = len(task_names)
+        
+        if n_tasks == 0:
+            raise ValueError("At least one task must be enabled!")
+        
+        if n_tasks == 1:
+            print(f"[INFO] Single task detected: {task_names[0]}")
+            print("[INFO] Using LinearScalarWeighting with weight=1.0\n")
+            weight_method = LinearScalarWeighting(
+                n_tasks=1,
+                device=self.device,
+                task_weights={task_names[0]: 1.0}
+            )
+        elif method_name == "linear":
+            task_weights = cfg.get("weight_method", {}).get("task_weights", {})
+            filtered_weights = {k: v for k, v in task_weights.items() if k in task_names}
+            weight_method = LinearScalarWeighting(
+                n_tasks=n_tasks,
+                device=self.device,
+                task_weights=filtered_weights
+            )
+        elif method_name == "famo":
+            params = cfg.get("weight_method", {})
+            weight_method = FAMOWeighting(
+                n_tasks=n_tasks,
+                device=self.device,
+                task_names=task_names,
+                gamma=params.get("gamma", 1e-5),
+                w_lr=params.get("w_lr", 0.025),
+                max_norm=params.get("max_norm", 1.0),
+            )
+        else:
+            raise ValueError(f"Unknown weight method: {method_name}")
+        
+        print(f"[INFO] Initialized MTL Weight Method: {method_name.upper()}\n")
+        return WeightMethodManager(weight_method)
+    
+    def setup_training(self):
+        """
+        Initialize all components for training.
+        Called after __init__ to ensure proper initialization order.
+        """
+        # 1. Build model
+        self.model = self._build_model(self.cfg)
+        
+        # 2. Build tasks
+        self.tasks = self._build_tasks(self.cfg)
+        
+        # 3. Initialize weight method
+        self.weight_method_manager = self._build_weight_method(self.cfg)
+    
+    # ==========================================
+    # Lightning Lifecycle Hooks
+    # ==========================================
+    
+    def on_fit_start(self):
+        """Called at the beginning of fit."""
+        if self.weight_method_manager is not None:
+            self.weight_method_manager.to(self.device)
+    
+    def training_step(self, batch, batch_idx):
+        """Standard training step with MTL support."""
+        # Step 1: Compute task losses
+        loss_dict = self.shared_step(batch)
+        self._current_losses = loss_dict
+        
+        # Step 2: Pre-backward hook (FAMO updates weights here)
+        self.weight_method_manager.trigger_lifecycle_hooks(
+            "on_before_backward",
+            losses=loss_dict,
+            model=self.model,
+            batch=batch
+        )
+        
+        # Step 3: Compute weighted loss
+        weighted_loss = self.weight_method_manager.compute_weighted_loss(
+            losses=loss_dict,
+            model=self.model,
+            batch=batch,
+            tasks=self.tasks
+        )
+        
+        # Step 4: Logging
+        self._log_training_metrics(loss_dict, weighted_loss)
+        
+        return weighted_loss
+    
+    def validation_step(self, batch, batch_idx):
+        """Standard validation step."""
+        loss_dict = self.shared_step(batch)
+        
+        weighted_loss = self.weight_method_manager.compute_weighted_loss(
+            losses=loss_dict,
+            model=self.model,
+            batch=batch,
+            tasks=self.tasks
+        )
+        
+        self.log(
+            "valid_loss",
+            weighted_loss,
+            prog_bar=True,
+            on_step=False,
+            on_epoch=True,
+            sync_dist=True
+        )
+        
+        return weighted_loss
+    
+    def on_before_optimizer_step(self, optimizer):
+        """Lightning hook - called before optimizer.step()."""
+        if self._current_losses is not None:
+            self.weight_method_manager.trigger_lifecycle_hooks(
+                "on_before_optimizer_step",
+                losses=self._current_losses,
+                model=self.model,
+                optimizer=optimizer,
+                tasks=self.tasks
+            )
+    
+    def on_after_backward(self):
+        """Lightning hook - called after backward."""
+        if self._current_losses is not None:
+            self.weight_method_manager.trigger_lifecycle_hooks(
+                "on_after_backward",
+                losses=self._current_losses,
+                model=self.model,
+                tasks=self.tasks
+            )
+    
+    def on_train_batch_end(self, outputs, batch, batch_idx):
+        """Lightning hook - called after training_step."""
+        for task_name, task in self.tasks.items():
+            if hasattr(task, 'on_train_batch_end'):
+                task.on_train_batch_end(
+                    outputs=outputs,
+                    batch=batch,
+                    batch_idx=batch_idx
+                )
+    
+    # ==========================================
+    # Optimizer Configuration
+    # ==========================================
+    
+    def configure_optimizers(self):
+        """
+        Optimizer chỉ lấy:
+        - model params
+        - task params
+        - weight method params (FAMO / Linear / etc.)
+        """
+        # 1. Model parameters
+        model_params = list(self.model.parameters())
+
+        # 2. Task parameters
+        task_params = []
+        for task in self.tasks.values():
+            task_params += list(task.parameters())
+
+        # 3. Weight method parameters (FAMO.w, etc.)
+        weight_method_param_groups = self.weight_method_manager.get_optimizer_parameters()
+
+        # 4. Combine
+        param_groups = [
+            {
+                "params": model_params + task_params,
+                # "lr": self.cfg.optimizer.lr,
+                "weight_decay": self.cfg.optimizer.weight_decay,
+            }
+        ]
+
+        # add weight method param groups (nếu có)
+        param_groups.extend(weight_method_param_groups)
+
+        optimizer = torch.optim.AdamW(param_groups)
+
+        # scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
+        #     optimizer,
+        #     T_max=self.trainer.estimated_stepping_batches
+        # )
+
+        # Define max_lr
+        self.max_lr = 1e-4
+        epochs = self.trainer.max_epochs
+        steps_per_epoch = len(self.trainer.datamodule.train_dataloader())
+
+        lr_scheduler = torch.optim.lr_scheduler.OneCycleLR(optimizer, 
+            max_lr=self.max_lr, 
+            steps_per_epoch=steps_per_epoch, 
+            epochs=epochs,
+            div_factor = 25,
+            final_div_factor=200,
+            pct_start = 0.20 ,
+            )
+        lr_dict = {
+            'scheduler': lr_scheduler, # The LR scheduler instance (required)
+            # The unit of the scheduler's step size, could also be 'step'
+            'interval': 'step',
+            'frequency': 1, # The frequency of the scheduler
+            # 'monitor': 'valid_loss', # Metric for `ReduceLROnPlateau` to monitor
+            'strict': True, # Whether to crash the training if `monitor` is not found
+            'name': None, # Custom name for `LearningRateMonitor` to use
+        }
+
+        return {
+            "optimizer": optimizer,
+            "lr_scheduler": lr_dict
+        }
+    
+    # ==========================================
+    # Helper Methods
+    # ==========================================
+    
+    def _log_training_metrics(self, loss_dict: Dict[str, torch.Tensor], 
+                             weighted_loss: torch.Tensor):
+        """Log training metrics. Can be overridden for custom logging."""
+        # Log individual task losses
+        for task_name, loss in loss_dict.items():
+            self.log(
+                f"train/{task_name}_loss",
+                loss,
+                on_epoch=True,
+                on_step=False
+            )
+        
+        # Log weighted loss
+        self.log(
+            "train/loss",
+            weighted_loss,
+            prog_bar=True,
+            on_epoch=True,
+            on_step=False
+        )
+        
+        # Log weight method metrics
+        weight_metrics = self.weight_method_manager.get_logging_dict()
+        for key, value in weight_metrics.items():
+            self.log(f"train/{key}", value, on_epoch=True, on_step=False)
+```
+
+---
+
+
+## `src/pretrain_module/registry.py`
+
+**Đường dẫn đầy đủ:** `/home/infres/ttran-25/eegfm/src/pretrain_module/registry.py`  
+**Kích thước:** `0.4 KB`  
+**Loại:** `.py`
+
+```python
+MODULE_REGISTRY = {}
+
+def register_module(name):
+    def wrapper(cls):
+        MODULE_REGISTRY[name] = cls
+        return cls
+    return wrapper
+
+
+def get_module(name):
+    if name not in MODULE_REGISTRY:
+        raise ValueError(
+            f"Unknown module {name}. "
+            f"Available: {list(MODULE_REGISTRY.keys())}"
+        )
+    return MODULE_REGISTRY[name]
+```
+
+---
+
+
+## `src/pretrain_module/cbramod/cbramod_pretrain_module.py`
+
+**Đường dẫn đầy đủ:** `/home/infres/ttran-25/eegfm/src/pretrain_module/cbramod/cbramod_pretrain_module.py`  
+**Kích thước:** `3.7 KB`  
+**Loại:** `.py`
+
+```python
+# src/pretrain_module/cbramod/cbramod_pretrain.py
+import torch
+import torch.nn as nn
+from src.pretrain_module.base_module import BaseModule
+from src.pretrain_module.registry import register_module
+from src.models.registry import get_model
+from .config_builder import CBraModConfigBuilder
+from .task.reconstruction import ReconstructionTask
+from .task.contrastive import ContrastiveTask
+from .task.byol import ContrastiveBYOLTask
+from .utils import augmentation, make_mask
+
+@register_module("cbramod_pretrain_module")
+class CBraModPretrain(BaseModule):
+    """CBraMod-specific pretraining module."""
+    
+    def __init__(self, cfg):
+        super().__init__(cfg)
+        self.setup_training()  # Initialize model, tasks, and weight method
+    
+    def _build_model(self, cfg) -> nn.Module:
+        """Build CBraMod model."""
+        builder = CBraModConfigBuilder()
+        model_cfg = builder.build(cfg)
+        
+        model_cls = get_model(cfg.model.name)
+        model = model_cls(**model_cfg)
+        
+        # Store model_cfg for task building
+        self.model_cfg = model_cfg
+        
+        return model
+    
+    def _build_tasks(self, cfg, model_cfg=None) -> nn.ModuleDict:
+        """Build CBraMod-specific tasks."""
+        if model_cfg is None:
+            model_cfg = self.model_cfg
+        
+        tasks = nn.ModuleDict()
+        task_configs = cfg.get("tasks", {}).get("tasks", {})
+        
+        # Reconstruction task
+        if task_configs.get("reconstruction", {}).get("enabled", False):
+            tasks["reconstruction"] = ReconstructionTask(
+                d_model=model_cfg["d_model"],
+                out_dim=model_cfg["out_dim"]
+            )
+            print("[INFO] ✓ Reconstruction task enabled")
+        
+        # Contrastive task
+        if task_configs.get("contrastive", {}).get("enabled", False):
+            contrastive_cfg = task_configs["contrastive"]
+            tasks["contrastive"] = ContrastiveTask(
+                model=self.model,
+                d_model=model_cfg["d_model"],
+                proj_dim=contrastive_cfg.get("proj_dim", 128),
+                temperature=contrastive_cfg.get("temperature", 0.5)
+            )
+            print("[INFO] ✓ Contrastive task enabled")
+        
+        # BYOL task
+        if task_configs.get("byol", {}).get("enabled", False):
+            byol_cfg = task_configs["byol"]
+            tasks["byol"] = ContrastiveBYOLTask(
+                online_encoder=self.model,
+                d_model=model_cfg["d_model"],
+                proj_dim=byol_cfg.get("proj_dim", 256),
+                hidden_dim=byol_cfg.get("hidden_dim", 512),
+                tau=byol_cfg.get("tau", 0.996)
+            )
+            print("[INFO] ✓ BYOL task enabled")
+        
+        if len(tasks) == 0:
+            raise ValueError("At least one task must be enabled!")
+        
+        print(f"[INFO] Total active tasks: {len(tasks)}\n")
+        return tasks
+    
+    def shared_step(self, batch):
+        """Compute all task losses for CBraMod."""
+        x = batch[0]
+        x = x.view(x.size(0), x.size(1), -1, self.model_cfg["patch_size"])
+        
+        # print("x max:", x.max().item())
+        # print("x mean:", x.mean().item())
+
+        # CBraMod-specific preprocessing
+        x_aug = augmentation(x)
+        mask = make_mask(x)
+
+        print(f"mask shape: {mask.shape}, x shape: {x.shape}, x_aug shape: {x_aug.shape}")
+        
+        # Forward pass
+        shared_output = self.model(x_aug, mask=mask)
+        
+        # Compute task losses
+        loss_dict = {}
+        for task_name, task in self.tasks.items():
+            task_output = task(shared_output, x, mask)
+            loss_dict[task_name] = task_output["loss"]
+        
+        return loss_dict
+```
+
+---
+
+
+## `src/pretrain_module/cbramod/config_builder.py`
+
+**Đường dẫn đầy đủ:** `/home/infres/ttran-25/eegfm/src/pretrain_module/cbramod/config_builder.py`  
+**Kích thước:** `1.2 KB`  
+**Loại:** `.py`
+
+```python
+# module/cbramod/config_builder.py
+import yaml
+from omegaconf import OmegaConf
+
+class CBraModConfigBuilder:
+
+    def __init__(self):
+        self.variants = self._load_variants()
+
+    def _load_variants(self):
+        with open("/home/infres/ttran-25/eegfm/configs/model/cbramod/variants.yaml", "r") as f:
+            return yaml.safe_load(f)
+
+    def build(self, cfg):
+        model_cfg = OmegaConf.to_container(cfg.model, resolve=True)
+
+        variant = model_cfg.get("variant", "base")
+        base_cfg = self.variants["variants"][variant].copy()
+
+        # merge override
+        for k, v in model_cfg.items():
+            if v is not None:
+                base_cfg[k] = v
+
+        # derive values
+        # seq_len = 16
+
+        return {
+            # core model config
+            # "seq_len": seq_len,
+            "patch_size": base_cfg["patch_size"],
+            "in_dim": base_cfg["in_dim"],
+            "out_dim": base_cfg["out_dim"],
+            "d_model": base_cfg["d_model"],
+            "dim_feedforward": base_cfg["dim_feedforward"],
+            "n_layer": base_cfg["n_layer"],
+            "nhead": base_cfg["nhead"],
+            "need_mask": base_cfg.get("need_mask", True),
+            "mask_ratio": base_cfg.get("mask_ratio", 0.5),
+        }
+```
+
+---
+
+
+## `src/pretrain_module/cbramod/utils.py`
+
+**Đường dẫn đầy đủ:** `/home/infres/ttran-25/eegfm/src/pretrain_module/cbramod/utils.py`  
+**Kích thước:** `3.5 KB`  
+**Loại:** `.py`
+
+```python
+
+import random
+import torch
+
+def augmentation(x, prob=0.25):
+    """
+    Đầu vào x đã là 4 chiều chuẩn: [B, C, N, patch_size]
+    Hàm áp dụng DUY NHẤT một phép tăng cường cho mỗi batch.
+    """
+    # 1. Trích xuất kích thước từ Tensor 4 chiều
+    B, C, N, patch_size = x.shape
+    T = N * patch_size  # Tổng số điểm thời gian (Time-steps)
+    device = x.device
+
+    # 2. Ép phẳng tạm thời về 3 chiều [B, C, T] để thực hiện biến đổi
+    x_3d = x.view(B, C, T)
+    out = x_3d.clone()
+
+    r = random.random()
+
+    # -------------------------------
+    # 1) Magnitude scaling (25% cơ hội)
+    # -------------------------------
+    if r < prob:
+        scale = torch.empty(1, device=device).uniform_(0.5, 2.0)
+        out = out * scale
+        flag = "scale_mag"
+
+    # -------------------------------
+    # 2) Gaussian noise (25% cơ hội)
+    # -------------------------------
+    elif r < 2 * prob:
+        noise = torch.randn_like(out) * 0.2  
+        out = out + noise
+        flag = "noise"
+
+    # -------------------------------
+    # 3) Interpolation (25% cơ hội)
+    # -------------------------------
+    elif r < 3 * prob:
+        delete_prob = 0.2
+        keep_n = int(T * (1 - delete_prob))
+        if keep_n > 0:
+            idx = torch.randperm(T, device=device)[:keep_n]
+            idx = torch.sort(idx)[0]
+            values_kept = out[:, :, idx]
+            t = torch.arange(T, dtype=out.dtype, device=device)
+            t_kept = idx.to(out.dtype)
+
+            left_idx = torch.searchsorted(t_kept, t, right=True) - 1
+
+            is_before = left_idx < 0
+            is_after = left_idx >= (keep_n - 1)
+            is_interp = ~(is_before | is_after)
+
+            if is_before.any():
+                num_before = is_before.sum()
+                out[:, :, is_before] = values_kept[:, :, 0:1].repeat(1, 1, num_before)
+
+            if is_after.any():
+                num_after = is_after.sum()
+                out[:, :, is_after] = values_kept[:, :, -1:].repeat(1, 1, num_after)
+
+            if is_interp.any():
+                left_interp = left_idx[is_interp]
+                t_interp = t[is_interp]
+                t_left = t_kept[left_interp]
+                t_right = t_kept[left_interp + 1]
+                delta = t_right - t_left
+                delta = torch.where(delta == 0, torch.ones_like(delta), delta)
+                weight = (t_interp - t_left) / delta
+
+                values_left = values_kept[:, :, left_interp]
+                values_right = values_kept[:, :, left_interp + 1]
+                values_interp = values_left + weight[None, None, :] * (values_right - values_left)
+                out[:, :, is_interp] = values_interp
+        flag = "interpolate"
+
+    # -------------------------------
+    # 4) Frequency masking (25% cơ hội)
+    # -------------------------------
+    elif r < 4 * prob:
+        fft = torch.fft.rfft(out, dim=2)
+        freq_bins = fft.shape[2]
+        mask_n = int(freq_bins * 0.2)
+        mask_idx = torch.randperm(freq_bins, device=device)[:mask_n]
+        fft[:, :, mask_idx] = 0
+        out = torch.fft.irfft(fft, n=T, dim=2)
+        flag = "freq_mask"
+    else:
+        flag = "keep"
+
+    # 3. KHÔI PHỤC LẠI dạng 4 chiều [B, C, N, patch_size] cho out
+    out = out.view(B, C, N, patch_size)
+        
+    return out
+
+def make_mask(x, mask_ratio=0.7):
+        # print(x.shape)
+        bz, ch, patch, _ = x.shape
+
+        mask = torch.zeros((bz, ch, patch), device=x.device)
+        mask = mask.bernoulli_(mask_ratio)
+
+        return mask
+```
+
+---
+
+
+## `src/pretrain_module/cbramod/task/base_task.py`
+
+**Đường dẫn đầy đủ:** `/home/infres/ttran-25/eegfm/src/pretrain_module/cbramod/task/base_task.py`  
+**Kích thước:** `0.1 KB`  
+**Loại:** `.py`
+
+```python
+import torch.nn as nn
+
+class BaseTask(nn.Module):
+
+    def forward(self, shared_output, batch):
+        raise NotImplementedError
+```
+
+---
+
+
+## `src/pretrain_module/cbramod/task/byol.py`
+
+**Đường dẫn đầy đủ:** `/home/infres/ttran-25/eegfm/src/pretrain_module/cbramod/task/byol.py`  
+**Kích thước:** `10.6 KB`  
+**Loại:** `.py`
+
+```python
+# ============================================
+# contrastive_byol_task.py
+# ============================================
+
+import copy
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+
+from .base_task import BaseTask
+from src.pretrain_module.cbramod.utils import augmentation, make_mask
+
+# ============================================
+# Projection Head
+# ============================================
+
+class ProjectionHead(nn.Module):
+
+    def __init__(self, in_dim, hidden_dim=512, out_dim=256):
+        super().__init__()
+        self.net = nn.Sequential(
+            nn.Linear(in_dim, hidden_dim),
+            nn.LayerNorm(hidden_dim),
+            nn.GELU(),
+            nn.Linear(hidden_dim, out_dim)
+        )
+
+    def forward(self, x):
+        return self.net(x)
+
+
+# ============================================
+# Predictor
+# ============================================
+
+class Predictor(nn.Module):
+
+    def __init__(self, in_dim=256, hidden_dim=512):
+        super().__init__()
+        self.net = nn.Sequential(
+            nn.Linear(in_dim, hidden_dim),
+            nn.LayerNorm(hidden_dim),
+            nn.GELU(),
+            nn.Linear(hidden_dim, in_dim)
+        )
+
+    def forward(self, x):
+        return self.net(x)
+
+
+# ============================================
+# BYOL Task
+# ============================================
+
+class ContrastiveBYOLTask(BaseTask):
+
+    def __init__(
+        self,
+        online_encoder,
+        d_model,
+        proj_dim=256,
+        hidden_dim=512,
+        tau=0.996,
+        tau_end=0.999,
+        total_steps=None,
+        temperature=0.1,       # thêm: nhiệt độ cho id_loss
+        koleo_weight=0.1,      # thêm: trọng số KoLeo, giống hệ số 0.1 trong B
+    ):
+        super().__init__()
+
+        # Tạo momentum scheduler giống chương trình B nếu total_steps được cung cấp
+        self.tau = tau
+        self.tau_end = tau_end
+        self.temperature = temperature
+        self.koleo_weight = koleo_weight
+
+        if total_steps is not None:
+            self._momentum_scheduler = iter(
+                tau + i * (tau_end - tau) / total_steps
+                for i in range(total_steps + 1)
+            )
+        else:
+            self._momentum_scheduler = None  # fallback về tau cố định
+
+        # =====================================
+        # ONLINE ENCODER REFERENCE
+        # =====================================
+        self.online_encoder = online_encoder
+
+        # =====================================
+        # TARGET ENCODER (EMA)
+        # =====================================
+        self.target_encoder = copy.deepcopy(online_encoder)
+        for p in self.target_encoder.parameters():
+            p.requires_grad = False
+
+        # =====================================
+        # ONLINE PROJECTOR
+        # =====================================
+        self.projector = ProjectionHead(
+            in_dim=d_model,
+            hidden_dim=hidden_dim,
+            out_dim=proj_dim
+        )
+
+        # =====================================
+        # ONLINE PREDICTOR
+        # =====================================
+        self.predictor = Predictor(
+            in_dim=proj_dim,
+            hidden_dim=hidden_dim
+        )
+
+        # =====================================
+        # TARGET PROJECTOR
+        # =====================================
+        self.target_projector = copy.deepcopy(self.projector)
+        for p in self.target_projector.parameters():
+            p.requires_grad = False
+
+    # ============================================
+    # Pooling
+    # ============================================
+
+    def pool(self, h):
+        """
+        h: [B, C, N, D] hoặc [B, N, D] phụ thuộc vào chiều của tensor đầu ra.
+        Đoạn code gốc: out_enc.mean(dim=[1, 2]) áp dụng cho tensor 4D [B, C, N, D]
+        """
+        if h.dim() == 4:
+            return h.mean(dim=(1, 2))
+        elif h.dim() == 3:
+            return h.mean(dim=1)
+        return h
+
+    # ============================================
+    # EMA UPDATE
+    # ============================================
+
+    @torch.no_grad()
+    def update_ema(self):
+
+        # Dùng momentum scheduler nếu có, không thì dùng tau cố định
+        if self._momentum_scheduler is not None:
+            try:
+                m = next(self._momentum_scheduler)
+            except StopIteration:
+                m = self.tau_end  # sau khi hết scheduler, giữ ở tau_end
+        else:
+            m = self.tau
+
+        # encoder EMA
+        for online, target in zip(
+            self.online_encoder.parameters(),
+            self.target_encoder.parameters()
+        ):
+            target.data.mul_(m).add_(online.data, alpha=1 - m)
+
+        # projector EMA
+        for online, target in zip(
+            self.projector.parameters(),
+            self.target_projector.parameters()
+        ):
+            target.data.mul_(m).add_(online.data, alpha=1 - m)
+
+    # ============================================
+    # Lifecycle hook
+    # ============================================
+
+    def on_train_batch_end(self, **kwargs):
+        self.update_ema()
+
+    # ============================================
+    # FORWARD (Chuẩn hóa theo flow code gốc)
+    # ============================================
+
+    def forward(self, shared_output, batch, mask):
+        """
+        shared_output: out_enc của nhánh Online nhận x_aug [B, C, N, D]
+        batch[0]: Dữ liệu gốc x (chưa qua augmentation)
+        """
+        x = batch
+        id_tensor = torch.arange(x.shape[0], device=x.device)
+
+        # =====================================
+        # 1. NHÁNH ONLINE (Từ x_aug)
+        # =====================================
+        # shared_output chính là kết quả của Online Encoder khi nhận x_aug
+        z_online = self.projector(shared_output)    # -> [B, proj_dim]
+        p_online = self.predictor(z_online)    # -> [B, proj_dim] (z_cons trong code cũ)
+        h_online = self.pool(p_online)    # -> [B, D]
+
+        # =====================================
+        # 2. NHÁNH TARGET EMA (Từ x sạch)
+        # =====================================
+        with torch.no_grad():
+            # Tạo mask nhẹ cho nhánh EMA giống hệt tỷ lệ code trước (mask / 4)
+            # Giả định mask gốc là 0.2 thì ema_mask_ratio là 0.05
+            ema_mask = make_mask(x, 0.1) 
+            
+            # Khởi chạy Target Encoder trên dữ liệu gốc x
+            h_target_enc = self.target_encoder(x, mask=ema_mask)
+            
+            # Xử lý nếu đầu ra của target_encoder trả về dict hoặc tensor thuần
+            if isinstance(h_target_enc, dict):
+                h_target_enc = h_target_enc.get("latent", h_target_enc.get("out_enc", h_target_enc))
+                
+            z_target = self.target_projector(h_target_enc) 
+            h_target = self.pool(z_target)      
+
+        # =====================================
+        # 3. TÍNH TOÁN LOSS
+        # =====================================
+        # Ép đầu ra dự đoán của mạng Online (p_online) trùng với vector neo của mạng Target (z_target)
+        loss, loss_koleo = id_loss(
+            z1=h_online,
+            z2=h_target.detach(),
+            id=id_tensor,
+            temperature=self.temperature,
+            koleo_weight=self.koleo_weight,
+        )
+
+        return {
+            "loss": loss,
+            "loss_koleo": loss_koleo,
+        }
+
+
+# ============================================
+# Loss functions 
+# ============================================
+
+def _koleo_one_view(z: torch.Tensor, eps: float = 1e-12) -> torch.Tensor:
+    """
+    KoLeo cho một view (Đúng logic code mẫu):
+    L = -(1/N) * sum_i log( min_{j!=i} ||z_i - z_j||^2 )
+    """
+    B = z.size(0)
+    if B < 2:
+        return z.new_tensor(0.0)
+
+    # Sử dụng bình phương khoảng cách Euclidean theo đúng mẫu, không dùng (1 - sim)
+    dist2 = torch.cdist(z, z, p=2).pow(2)
+
+    # Loại bỏ đường chéo bằng cách điền +inf
+    dist2.fill_diagonal_(float('inf'))
+
+    # Tìm khoảng cách nhỏ nhất tới neighbor
+    nn2, _ = dist2.min(dim=1)
+
+    # KoLeo loss
+    loss = -torch.mean(torch.log(nn2 + eps))
+    return loss
+
+
+def koleo_reg(z1: torch.Tensor, z2: torch.Tensor, eps: float = 1e-12) -> torch.Tensor:
+    """
+    Tính KoLeo regularizer trung bình trên cả 2 views.
+    """
+    return 0.5 * (_koleo_one_view(z1, eps) + _koleo_one_view(z2, eps))
+
+
+def id_loss(z1, z2, id, temperature=0.1, decoupled=False, koleo_weight=0.1):
+    '''
+    Tính Contrastive Loss dựa trên Subject ID pairing kết hợp với KoLeo (Đúng logic mẫu).
+    '''
+    device = z1.device
+    B, D = z1.shape
+    
+    # Giữ nguyên việc tính KoLeo trên embedding GỐC (trước khi chuẩn hóa l2) theo code mẫu
+    loss_koleo = koleo_reg(z1, z2)
+    
+    # Chuẩn hóa l2 phục vụ cho Contrastive Loss
+    z1_norm = F.normalize(z1, dim=1)
+    z2_norm = F.normalize(z2, dim=1)
+    id = id.to(device)
+
+    def one_direction_loss(exp_sim, id):
+        loss = 0.0
+        num_valid_anchors = 0
+        
+        # Tạo mask tương tác ID: pos_mask[i, j] = True nếu id[i] == id[j]
+        # Sử dụng vòng lặp theo đúng logic xử lý mask và phân tách mẫu (decoupled) của code mẫu
+        for i in range(B):
+            pos_mask = (id == id[i])
+            num_pos = pos_mask.sum().item()
+            if num_pos == 0:
+                continue
+                
+            pos_exp = exp_sim[i][pos_mask]
+            all_sum = exp_sim[i].sum()
+            
+            if decoupled:
+                denoms = all_sum - pos_exp
+                denoms = torch.clamp(denoms, min=1e-6)
+                log_probs = torch.log(pos_exp / denoms)
+            else:
+                denom = all_sum
+                log_probs = torch.log(pos_exp / denom)
+                
+            loss += -log_probs.mean()
+            num_valid_anchors += 1
+            
+        if num_valid_anchors == 0:
+            return torch.tensor(0.0, device=device)
+        return loss / num_valid_anchors
+
+    # Hướng 1: z1 làm anchor, z2 làm targets
+    sim12 = torch.mm(z1_norm, z2_norm.T) / temperature
+    exp_sim12 = torch.exp(sim12)
+    l12 = one_direction_loss(exp_sim12, id)
+
+    # Hướng 2: z2 làm anchor, z1 làm targets
+    sim21 = torch.mm(z2_norm, z1_norm.T) / temperature
+    exp_sim21 = torch.exp(sim21)
+    l21 = one_direction_loss(exp_sim21, id)
+
+    # Tính toán contrastive loss tổng hợp từ 2 hướng
+    loss_nce = (l12 + l21) / 2
+    
+    # Kết hợp tổng loss với trọng số tương tự cấu trúc hiện tại của bạn
+    loss_total = loss_nce + koleo_weight * loss_koleo
+
+    return loss_total, loss_koleo
+```
+
+---
+
+
+## `src/pretrain_module/cbramod/task/contrastive.py`
+
+**Đường dẫn đầy đủ:** `/home/infres/ttran-25/eegfm/src/pretrain_module/cbramod/task/contrastive.py`  
+**Kích thước:** `1.9 KB`  
+**Loại:** `.py`
+
+```python
+import torch.nn as nn
+import torch.nn.functional as F
+from .base_task import BaseTask
+
+class ContrastiveTask(BaseTask):
+
+    def __init__(self, model, d_model, proj_dim=128, temperature=0.5):
+        super().__init__()
+
+        self.model = model
+        self.projector = ProjectionHead(d_model, proj_dim)
+        self.loss_fn = NTXentLoss(temperature)
+
+    def forward(self, shared_output, batch):
+
+        # 1. create 2 views
+        x1 = batch[0]
+        x2 = augmentation(batch[0])
+
+        # 2. forward backbone
+        h1 = self.model(x1, return_mask=False)["latent"]
+        h2 = self.model(x2, return_mask=False)["latent"]
+
+        # 3. pooling
+        h1 = h1.mean(dim=1)
+        h2 = h2.mean(dim=1)
+
+        # 4. projection
+        z1 = self.projector(h1)
+        z2 = self.projector(h2)
+
+        # 5. loss
+        loss = self.loss_fn(z1, z2)
+
+        return {"loss": loss}
+
+class ProjectionHead(nn.Module):
+    def __init__(self, d_model, proj_dim=128):
+        super().__init__()
+        self.net = nn.Sequential(
+            nn.Linear(d_model, d_model),
+            nn.ReLU(),
+            nn.Linear(d_model, proj_dim)
+        )
+
+    def forward(self, x):
+        return self.net(x)
+
+class NTXentLoss(nn.Module):
+    def __init__(self, temperature=0.5):
+        super().__init__()
+        self.t = temperature
+
+    def forward(self, z1, z2):
+        """
+        z1, z2: [B, D]
+        """
+        B = z1.size(0)
+
+        z1 = F.normalize(z1, dim=1)
+        z2 = F.normalize(z2, dim=1)
+
+        z1 = z1.mean(dim=1)
+        z2 = z2.mean(dim=1)
+
+        z = torch.cat([z1, z2], dim=0)  # [2B, D]
+
+        sim = torch.matmul(z, z.T) / self.t  # [2B, 2B]
+
+        mask = torch.eye(2 * B, device=z.device).bool()
+        sim = sim.masked_fill(mask, -1e9)
+
+        pos = torch.cat([
+            torch.arange(B, 2*B),
+            torch.arange(0, B)
+        ]).to(z.device)
+
+        loss = F.cross_entropy(sim, pos)
+        return loss
+```
+
+---
+
+
+## `src/pretrain_module/cbramod/task/reconstruction.py`
+
+**Đường dẫn đầy đủ:** `/home/infres/ttran-25/eegfm/src/pretrain_module/cbramod/task/reconstruction.py`  
+**Kích thước:** `0.9 KB`  
+**Loại:** `.py`
+
+```python
+import torch.nn as nn
+
+from .base_task import BaseTask
+
+class ReconstructionTask(BaseTask):
+
+    def __init__(self, d_model, out_dim):
+        super().__init__()
+
+        self.decoder = nn.Sequential(
+            nn.Linear(d_model, d_model*4),
+            nn.GELU(),
+            nn.LayerNorm(d_model*4),
+            nn.Linear(d_model*4, out_dim)
+        )
+
+        self.loss_fn = nn.MSELoss()
+
+    def forward(self, shared_output, x, mask):
+        z = shared_output
+        pred = self.decoder(z)
+        # loss = self.loss_fn(pred, target)
+
+        masked_x = x[mask == 1]
+        masked_y = pred[mask == 1]
+
+        # print("recon_error_visible:", recon_error_visible.item())
+        # print("recon_error_masked :", recon_error_masked.item())
+
+        loss = self.loss_fn(masked_x, masked_y)
+        
+        return {
+            "loss": loss,
+            "pred": pred
+        }
+```
+
+---
+
+
+## `src/pretrain_module/eegpt/config_builder.py`
+
+**Đường dẫn đầy đủ:** `/home/infres/ttran-25/eegfm/src/pretrain_module/eegpt/config_builder.py`  
+**Kích thước:** `6.4 KB`  
+**Loại:** `.py`
+
+```python
+# EEGPTConfigBuilder
+from pathlib import Path
+import yaml
+from omegaconf import OmegaConf
+
+class EEGPTConfigBuilder:
+    """Build complete EEGPT config from variants + overrides"""
+    
+    def __init__(self):
+        self.variants = self._load_variants()
+        
+    def _load_variants(self):
+        """Load variants from yaml file"""
+        variants_path = "/home/infres/ttran-25/eegfm/configs/model/eegpt/variants.yaml"
+        with open(variants_path, 'r') as f:
+            return yaml.safe_load(f)
+    
+    def build(self, cfg):
+        """
+        Build complete model config from:
+        - Base variant config
+        - Override from cfg.model
+        - Calculate derived values
+        """
+        model_cfg = OmegaConf.to_container(cfg.model, resolve=True)
+        
+        # Get variant
+        variant_name = model_cfg.get('variant', 'L_822')
+        variant_cfg = self.variants['variants'][variant_name].copy()
+        
+        # Merge: cfg.model overrides variant
+        for key in variant_cfg:
+            if key not in model_cfg or model_cfg[key] is None:
+                model_cfg[key] = variant_cfg[key]
+        
+        # Calculate derived values
+        img_size = model_cfg['img_size']
+        patch_size = model_cfg['patch_size']
+        seq_len = img_size[1] // patch_size
+        num_patches = (img_size[0], seq_len)
+        
+        embed_dim = model_cfg['embed_dim']
+        embed_num = model_cfg['embed_num']
+        num_heads = model_cfg['num_heads']
+        
+        # Get defaults
+        # gpt_default = self.variants['gpt_default']
+        # order_default = self.variants['order_default']
+        
+        # Build complete config
+        complete_cfg = {
+            # Common params
+            'img_size': img_size,
+            'patch_size': patch_size,
+            'num_patches': num_patches,
+            'embed_dim': embed_dim,
+            'embed_num': embed_num,
+            'num_heads': num_heads,
+            
+            # Encoder
+            'encoder': {
+                'img_size': img_size,
+                'patch_size': patch_size,
+                'embed_dim': embed_dim,
+                'embed_num': embed_num,
+                'depth': model_cfg['encoder_depth'],
+                'num_heads': num_heads,
+                'mlp_ratio': model_cfg.get('mlp_ratio', 4.0),
+                'qkv_bias': model_cfg.get('qkv_bias', True),
+                'drop_rate': model_cfg.get('drop_rate', 0.0),
+                'attn_drop_rate': model_cfg.get('attn_drop_rate', 0.0),
+                'drop_path_rate': model_cfg.get('drop_path_rate', 0.0),
+                'init_std': model_cfg.get('init_std', 0.02),
+            },
+            
+            # Predictor
+            'predictor': {
+                'num_patches': num_patches,
+                'embed_dim': embed_dim,
+                'embed_num': embed_num,
+                'predictor_embed_dim': model_cfg.get('predictor_embed_dim', embed_dim),
+                'depth': model_cfg['predictor_depth'],
+                'num_heads': num_heads,
+                'use_part_pred': model_cfg.get('use_part_pred', True),
+                'mlp_ratio': model_cfg.get('mlp_ratio', 4.0),
+                'qkv_bias': model_cfg.get('qkv_bias', True),
+                'drop_rate': model_cfg.get('drop_rate', 0.0),
+                'attn_drop_rate': model_cfg.get('attn_drop_rate', 0.0),
+                'drop_path_rate': model_cfg.get('drop_path_rate', 0.0),
+                'init_std': model_cfg.get('init_std', 0.02),
+            },
+            
+            # Reconstructor
+            'reconstructor': {
+                'num_patches': num_patches,
+                'patch_size': patch_size,
+                'embed_dim': embed_dim,
+                'embed_num': embed_num,
+                'reconstructor_embed_dim': model_cfg.get('reconstructor_embed_dim', embed_dim),
+                'depth': model_cfg['reconstructor_depth'],
+                'num_heads': num_heads,
+                'mlp_ratio': model_cfg.get('mlp_ratio', 4.0),
+                'qkv_bias': model_cfg.get('qkv_bias', True),
+                'drop_rate': model_cfg.get('drop_rate', 0.0),
+                'attn_drop_rate': model_cfg.get('attn_drop_rate', 0.0),
+                'drop_path_rate': model_cfg.get('drop_path_rate', 0.0),
+                'init_std': model_cfg.get('init_std', 0.02),
+            },
+            
+            # Projector
+            # 'projector': {
+            #     'in_dim': embed_dim,
+            #     'hidden_dim': embed_dim * 2,
+            #     'out_dim': model_cfg.get('projector_out_dim', embed_dim),
+            #     'dropout_rate': model_cfg.get('projector_dropout', 0.2),
+            # },
+            
+            # # Contrastive predictor
+            # 'contrastive_predictor': {
+            #     'in_dim': model_cfg.get('projector_out_dim', embed_dim),
+            #     'hidden_dim': model_cfg.get('projector_out_dim', embed_dim) // 2,
+            #     'out_dim': model_cfg.get('projector_out_dim', embed_dim),
+            #     'dropout_rate': model_cfg.get('contrastive_predictor_dropout', 0.1),
+            # },
+            
+            # # GPT decoder
+            # 'gpt_decoder': {
+            #     'embed_dim': model_cfg.get('gpt_embed_dim', gpt_default['embed_dim']),
+            #     'num_hidden_layers': model_cfg.get('gpt_num_hidden_layers', gpt_default['num_hidden_layers']),
+            #     'num_attention_heads': model_cfg.get('gpt_num_attention_heads', gpt_default['num_attention_heads']),
+            #     'intermediate_dim_factor': gpt_default['intermediate_dim_factor'],
+            #     'hidden_activation': gpt_default['hidden_activation'],
+            #     'dropout': gpt_default['dropout'],
+            #     'n_positions': seq_len,
+            #     'in_dim': embed_dim,
+            # },
+            
+            # # Order classifier
+            # 'order_classifier': {
+            #     'feature_dim': embed_dim * embed_num,
+            #     'num_subsamples': seq_len,
+            #     'num_classes': seq_len,
+            #     'num_layers': model_cfg.get('order_num_layers', order_default['num_layers']),
+            #     'num_heads': model_cfg.get('order_num_heads', order_default['num_heads']),
+            #     'hidden_dim': embed_dim,
+            # },
+            
+            # # Pairwise order classifier
+            # 'pairwise_order_classifier': {
+            #     'feature_dim': embed_dim * embed_num,
+            #     'hidden_dim': (embed_dim * embed_num) // 2,
+            #     'num_pair': seq_len * 2,
+            # },
+        }
+        
+        return complete_cfg
+```
+
+---
+
+
+## `src/pretrain_module/eegpt/eegpt_pretrain_module.py`
+
+**Đường dẫn đầy đủ:** `/home/infres/ttran-25/eegfm/src/pretrain_module/eegpt/eegpt_pretrain_module.py`  
+**Kích thước:** `4.2 KB`  
+**Loại:** `.py`
+
+```python
+import torch.nn.functional as F
+import torch
+import torch.nn as nn
+
+from src.pretrain_module.registry import register_module
+from src.pretrain_module.base_module import BaseModule
+from src.models.registry import get_model
+from .task.reconstruction import ReconstructionTask
+from .task.contrastive import ContrastiveTask
+from .task.byol import ContrastiveBYOLTask
+from .config_builder import EEGPTConfigBuilder
+from .utils import augmentation, make_masks
+
+
+@register_module("eegpt_pretrain_module")
+class EEGPretrain(BaseModule):
+
+    def __init__(self, cfg):
+        super().__init__(cfg)
+        self.setup_training()  # Initialize model, tasks, and weight method
+
+    def _build_model(self, cfg) -> nn.Module:
+        """Build EEGPT model."""
+        builder = EEGPTConfigBuilder()
+        model_cfg = builder.build(cfg)
+        
+        model_cls = get_model(cfg.model.name)
+        model = model_cls(model_cfg)
+        
+        # Store model_cfg for task building
+        self.model_cfg = model_cfg
+        return model
+
+    def _build_tasks(self, cfg, model_cfg=None) -> nn.ModuleDict:
+        """Build CBraMod-specific tasks."""
+        if model_cfg is None:
+            model_cfg = self.model_cfg
+        
+        tasks = nn.ModuleDict()
+        task_configs = cfg.get("tasks", {}).get("tasks", {})
+        
+        # Reconstruction task
+        if task_configs.get("reconstruction", {}).get("enabled", False):
+            tasks["reconstruction"] = ReconstructionTask(
+                online_encoder=self.model,
+                models_configs=self.model_cfg
+            )
+            print("[INFO] ✓ Reconstruction task enabled")
+        
+        # Contrastive task
+        if task_configs.get("contrastive", {}).get("enabled", False):
+            contrastive_cfg = task_configs["contrastive"]
+            tasks["contrastive"] = ContrastiveTask(
+                model=self.model,
+                d_model=model_cfg["embed_dim"],
+                proj_dim=contrastive_cfg.get("proj_dim", 128),
+                temperature=contrastive_cfg.get("temperature", 0.5)
+            )
+            print("[INFO] ✓ Contrastive task enabled")
+        
+        # BYOL task
+        if task_configs.get("byol", {}).get("enabled", False):
+            byol_cfg = task_configs["byol"]
+            try:
+                steps_per_epoch = len(self.trainer.datamodule.train_dataloader())
+                max_epochs = self.trainer.max_epochs
+                total_steps = int(steps_per_epoch * max_epochs) + 1
+            except Exception:
+                # Nếu trainer chưa sẵn sàng lúc build tasks (trường hợp hiếm), fallback về None
+                # → task sẽ dùng tau cố định; có thể gọi lại sau khi trainer attach
+                total_steps = None
+ 
+            tasks["byol"] = ContrastiveBYOLTask(
+                online_encoder=self.model,
+                d_model=model_cfg["embed_dim"],
+                proj_dim=byol_cfg.get("proj_dim", 256),
+                hidden_dim=byol_cfg.get("hidden_dim", 512),
+                tau=byol_cfg.get("tau", 0.996),
+                tau_end=byol_cfg.get("tau_end", 0.999),   # FIX Bug: thêm tham số mới
+                total_steps=total_steps,                   # FIX Bug: truyền total_steps
+            )
+            print("[INFO] ✓ BYOL task enabled")
+        
+        if len(tasks) == 0:
+            raise ValueError("At least one task must be enabled!")
+        
+        print(f"[INFO] Total active tasks: {len(tasks)}\n")
+        return tasks
+
+    # ==============================================================
+    # Shared step
+    # ==============================================================
+    def shared_step(self, batch):
+        x, _ = batch
+        x_aug = augmentation(x)
+
+        mask_x, mask_y = make_masks(
+            self.model.encoder.num_patches
+        )
+
+        # Forward pass
+        shared_output = self.model(
+            x=x_aug, 
+            chan_ids=self.model.chans_id.to(x_aug), 
+            mask_x=mask_x
+        )
+        
+        # Compute task losses
+        loss_dict = {}
+        for task_name, task in self.tasks.items():
+            task_output = task(shared_output=shared_output, x=x, x_aug=x_aug, mask_x=mask_x, mask_y=mask_y)
+            loss_dict[task_name] = task_output["loss"]
+        
+        return loss_dict
+```
+
+---
+
+
+## `src/pretrain_module/eegpt/utils.py`
+
+**Đường dẫn đầy đủ:** `/home/infres/ttran-25/eegfm/src/pretrain_module/eegpt/utils.py`  
+**Kích thước:** `8.7 KB`  
+**Loại:** `.py`
+
+```python
+import random
+import torch
+
+def make_masks(num_patchs, mC_x=12, p_n_y=0.4, p_c_y=0.2):
+        
+        C, N = num_patchs
+        mC_x = C - int(C * p_c_y)
+        
+        while True:
+            mask_x = []# mN, mC
+            mask_y = []
+            mask_y_bx = []
+            for i in range(N):
+                c_idx = torch.randperm(C) + i * C
+
+                if random.random() > p_n_y:
+                    mask_x.append(c_idx[:mC_x])
+                    mask_y_bx.append(c_idx[mC_x:])
+                else:
+                    mask_y.append(c_idx)
+
+            if len(mask_x) == 0: continue
+            if len(mask_y_bx) == 0: continue
+            
+            mask_y_bx = torch.cat(mask_y_bx, dim=0)
+            if len(mask_y_bx) == 0: continue
+            break
+        
+        return torch.stack(mask_x, dim=0), torch.cat(mask_y + [mask_y_bx], dim=0)
+
+def augmentation(x, prob=0.25):
+    """
+    Applies exactly ONE augmentation per sample.
+    """
+    B, C, T = x.shape
+    device = x.device
+    out = x.clone()
+    r = random.random()
+    flag = "keep"
+
+    # Dùng IF - ELIF để ép buộc chỉ chọn duy nhất một nhánh xử lý
+    if r < prob:
+        scale = torch.empty(1, device=device).uniform_(0.5, 2.0)
+        out = out * scale
+        flag = "scale_mag"
+
+    elif r < 2 * prob:
+        noise = torch.randn_like(out) * 0.2
+        out = out + noise
+        flag = "noise"
+
+    elif r < 3 * prob:
+        delete_prob = 0.2
+        keep_n = int(T * (1 - delete_prob))
+        if keep_n > 0:
+            idx = torch.randperm(T, device=device)[:keep_n]
+            idx = torch.sort(idx)[0]
+            values_kept = out[:, :, idx]
+            t = torch.arange(T, dtype=out.dtype, device=device)
+            t_kept = idx.to(out.dtype)
+            left_idx = torch.searchsorted(t_kept, t, right=True) - 1
+
+            is_before = left_idx < 0
+            is_after = left_idx >= (keep_n - 1)
+            is_interp = ~(is_before | is_after)
+
+            if is_before.any():
+                out[:, :, is_before] = values_kept[:, :, 0:1].repeat(1, 1, is_before.sum())
+            if is_after.any():
+                out[:, :, is_after] = values_kept[:, :, -1:].repeat(1, 1, is_after.sum())
+            if is_interp.any():
+                left_interp = left_idx[is_interp]
+                weight = (t[is_interp] - t_kept[left_interp]) / (t_kept[left_interp + 1] - t_kept[left_interp])
+                out[:, :, is_interp] = values_kept[:, :, left_interp] + weight[None, None, :] * (values_kept[:, :, left_interp + 1] - values_kept[:, :, left_interp])
+        flag = "interpolate"
+
+    elif r < 4 * prob:
+        fft = torch.fft.rfft(out, dim=2)
+        mask_n = int(fft.shape[2] * 0.2)
+        mask_idx = torch.randperm(fft.shape[2], device=device)[:mask_n]
+        fft[:, :, mask_idx] = 0
+        out = torch.fft.irfft(fft, n=T, dim=2)
+        flag = "freq_mask"
+
+    # return out, flag
+    return out
+
+# def augmentation(x, prob=0.25, mC_x=12, p_n_y=0.2, p_c_y=0.2):
+#         """
+#         x: Tensor [B, C, T]
+#         Applies exactly ONE augmentation per sample
+#         """
+#         B, C, T = x.shape
+#         device = x.device
+#         out = x.clone()
+
+#         r = random.random()
+
+#         # -------------------------------
+#         # 1) Magnitude scaling (20%)
+#         # -------------------------------
+#         # if random.random() < prob :
+#         if r < prob :
+#             # scale = torch.empty(1, device=device).uniform_(0.5, 2.0)
+#             scale = torch.empty(1, device=device).uniform_(0.5, 2.0)
+#             out = out * scale
+#             flag = "scale_mag"
+
+#         # -------------------------------
+#         # 2) Gaussian noise (20%)
+#         # -------------------------------
+#         # if random.random() < prob:
+#         if r < 2*prob :
+#             noise = torch.randn_like(out) * 0.2  # standard deviation = 0.1
+#             # noise = torch.randn_like(out) * 0.1
+#             out = out + noise
+#             flag = "noise"
+
+#         # -------------------------------
+#         # 3) Interpolation (20%)
+#         # -------------------------------
+#         # if random.random() < prob:
+#         if r < 3*prob :
+#             # delete_prob = 0.2
+#             delete_prob = 0.2
+#             keep_n = int(T * (1 - delete_prob))
+#             if keep_n == 0:
+#                 # Rare case: all deleted, keep original or set to zero (adjust as needed)
+#                 flag = "interpolate"
+#             else:
+#                 idx = torch.randperm(T, device=device)[:keep_n]
+#                 idx = torch.sort(idx)[0]  # [keep_n]
+#                 values_kept = out[:, :, idx]  # [B, C, keep_n]
+#                 t = torch.arange(T, dtype=out.dtype, device=device)  # [T]
+#                 t_kept = idx.to(out.dtype)  # [keep_n]
+
+#                 # Find left index for each t (largest k where t_kept[k] <= t)
+#                 left_idx = torch.searchsorted(t_kept, t, right=True) - 1  # [T]
+
+#                 is_before = left_idx < 0
+#                 is_after = left_idx >= (keep_n - 1)
+#                 is_interp = ~(is_before | is_after)
+
+#                 # Handle before: constant with first kept
+#                 if is_before.any():
+#                     num_before = is_before.sum()
+#                     out[:, :, is_before] = values_kept[:, :, 0:1].repeat(1, 1, num_before)
+
+#                 # Handle after: constant with last kept
+#                 if is_after.any():
+#                     num_after = is_after.sum()
+#                     out[:, :, is_after] = values_kept[:, :, -1:].repeat(1, 1, num_after)
+
+#                 # Handle interp regions: linear between left and right
+#                 if is_interp.any():
+#                     left_interp = left_idx[is_interp]  # [num_interp]
+#                     t_interp = t[is_interp]
+#                     t_left = t_kept[left_interp]
+#                     t_right = t_kept[left_interp + 1]
+#                     delta = t_right - t_left
+#                     # Avoid div by zero (shouldn't happen with unique idx)
+#                     delta = torch.where(delta == 0, torch.ones_like(delta), delta)
+#                     weight = (t_interp - t_left) / delta  # [num_interp]
+
+#                     values_left = values_kept[:, :, left_interp]  # [B, C, num_interp]
+#                     values_right = values_kept[:, :, left_interp + 1]  # [B, C, num_interp]
+#                     values_interp = values_left + weight[None, None, :] * (values_right - values_left)
+#                     out[:, :, is_interp] = values_interp
+
+#             flag = "interpolate"
+
+#         # -------------------------------
+#         # 4) Frequency masking (20%) - mask 10% frequency
+#         # -------------------------------
+#         # if random.random() < prob:
+#         if r < 4*prob :
+#             fft = torch.fft.rfft(out, dim=2)  # FFT along T
+#             freq_bins = fft.shape[2]
+
+#             mask_n = int(freq_bins * 0.2)
+#             # mask_n = int(freq_bins * 0.4)
+#             mask_idx = torch.randperm(freq_bins, device=device)[:mask_n]
+
+#             fft[:, :, mask_idx] = 0
+#             out = torch.fft.irfft(fft, n=T, dim=2)
+#             flag = "freq_mask"
+#         else:
+#             flag = "keep"
+            
+#         return out
+
+class GradientMonitor:
+
+    def __init__(self, pl_module):
+        self.model = pl_module.model
+        self.pl_module = pl_module
+
+    def collect_modules(self):
+        modules = {}
+
+        for i, blk in enumerate(self.model.encoder.blocks):
+            modules[f"enc.block.{i}"] = blk.attn
+            modules[f"enc.mlp.{i}"] = blk.mlp
+
+        return modules
+
+    def get_grads(self, loss, modules):
+        params = []
+        names = []
+
+        for name, m in modules.items():
+            for p in m.parameters():
+                if p.requires_grad:
+                    params.append(p)
+                    names.append(name)
+
+        grads = torch.autograd.grad(
+            loss,
+            params,
+            retain_graph=True,
+            allow_unused=True
+        )
+
+        out = {}
+        for name, g in zip(names, grads):
+            if g is None:
+                continue
+            out.setdefault(name, []).append(g.detach().flatten())
+
+        return {k: torch.cat(v) for k, v in out.items()}
+
+    def log_conflict(self, loss_a, loss_b, step=True):
+        modules = self.collect_modules()
+
+        ga = self.get_grads(loss_a, modules)
+        gb = self.get_grads(loss_b, modules)
+
+        for name in modules:
+            if name not in ga or name not in gb:
+                continue
+
+            cos = torch.dot(ga[name], gb[name]) / (
+                torch.norm(ga[name]) * torch.norm(gb[name]) + 1e-8
+            )
+
+            self.pl_module.log(
+                f"conflict/{name}/cos",
+                cos,
+                on_step=True
+            )
+```
+
+---
+
+
+## `src/pretrain_module/eegpt/task/base_task.py`
+
+**Đường dẫn đầy đủ:** `/home/infres/ttran-25/eegfm/src/pretrain_module/eegpt/task/base_task.py`  
+**Kích thước:** `0.1 KB`  
+**Loại:** `.py`
+
+```python
+import torch.nn as nn
+
+class BaseTask(nn.Module):
+
+    def forward(self, shared_output, batch):
+        raise NotImplementedError
+```
+
+---
+
+
+## `src/pretrain_module/eegpt/task/byol.py`
+
+**Đường dẫn đầy đủ:** `/home/infres/ttran-25/eegfm/src/pretrain_module/eegpt/task/byol.py`  
+**Kích thước:** `11.0 KB`  
+**Loại:** `.py`
+
+```python
+# ============================================
+# contrastive_byol_task.py
+# ============================================
+
+import copy
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+
+from .base_task import BaseTask
+from src.pretrain_module.eegpt.utils import augmentation, make_masks
+
+# ============================================
+# Projection Head
+# ============================================
+
+class ProjectionHead(nn.Module):
+
+    def __init__(self, in_dim, hidden_dim=512, out_dim=256):
+        super().__init__()
+
+        self.layer1 = nn.Linear(in_dim, hidden_dim)
+        self.norm = nn.LayerNorm(hidden_dim)
+        self.act = nn.GELU()
+        self.layer2 = nn.Linear(hidden_dim, out_dim)
+
+    def forward(self, x):
+        x = self.layer1(x)
+        x = self.norm(x)
+        x = self.act(x)
+        x = self.layer2(x)
+        return x
+
+# ============================================
+# Predictor
+# ============================================
+
+class Predictor(nn.Module):
+
+    def __init__(self, in_dim=256, hidden_dim=512):
+        super().__init__()
+
+        self.layer1 = nn.Linear(in_dim, hidden_dim)
+        self.norm = nn.LayerNorm(hidden_dim)
+        self.act = nn.GELU()
+        self.layer2 = nn.Linear(hidden_dim, in_dim)
+
+    def forward(self, x):
+        x = self.layer1(x)
+        x = self.norm(x)
+        x = self.act(x)
+        x = self.layer2(x)
+        return x
+
+
+# ============================================
+# BYOL Task
+# ============================================
+
+class ContrastiveBYOLTask(BaseTask):
+
+    def __init__(
+        self,
+        online_encoder,
+        d_model,
+        proj_dim=256,
+        hidden_dim=512,
+        tau=0.996,
+        tau_end=0.999,
+        total_steps=None,
+        temperature=0.1,       # thêm: nhiệt độ cho id_loss
+        koleo_weight=0.1,      # thêm: trọng số KoLeo, giống hệ số 0.1 trong B
+    ):
+        super().__init__()
+
+        # Tạo momentum scheduler giống chương trình B nếu total_steps được cung cấp
+        self.tau = tau
+        self.tau_end = tau_end
+        self.temperature = temperature
+        self.koleo_weight = koleo_weight
+
+        if total_steps is not None:
+            self._momentum_scheduler = iter(
+                tau + i * (tau_end - tau) / total_steps
+                for i in range(total_steps + 1)
+            )
+        else:
+            self._momentum_scheduler = None  # fallback về tau cố định
+
+        # =====================================
+        # ONLINE ENCODER REFERENCE
+        # =====================================
+        self.online_encoder = online_encoder
+
+        # =====================================
+        # TARGET ENCODER (EMA)
+        # =====================================
+        self.target_encoder = copy.deepcopy(online_encoder)
+        for p in self.target_encoder.parameters():
+            p.requires_grad = False
+
+        # =====================================
+        # ONLINE PROJECTOR
+        # =====================================
+        self.projector = ProjectionHead(
+            in_dim=d_model,
+            hidden_dim=hidden_dim,
+            out_dim=proj_dim
+        )
+
+        # =====================================
+        # ONLINE PREDICTOR
+        # =====================================
+        self.predictor = Predictor(
+            in_dim=proj_dim,
+            hidden_dim=hidden_dim
+        )
+
+        # =====================================
+        # TARGET PROJECTOR (EMA)
+        # =====================================
+        self.target_projector = copy.deepcopy(self.projector)
+        for p in self.target_projector.parameters():
+            p.requires_grad = False
+
+    # ============================================
+    # Pooling
+    # ============================================
+
+    def pool(self, h):
+        """
+        h: [B, C, N, D] hoặc [B, N, D] phụ thuộc vào chiều của tensor đầu ra.
+        Đoạn code gốc: out_enc.mean(dim=[1, 2]) áp dụng cho tensor 4D [B, C, N, D]
+        """
+        if h.dim() == 4:
+            return h.mean(dim=(1, 2))
+        elif h.dim() == 3:
+            return h.mean(dim=1)
+        return h
+
+    # ============================================
+    # BYOL LOSS
+    # ============================================
+   
+    # def byol_loss(self, p, z):
+    #     p = F.normalize(p, dim=-1)
+    #     z = F.normalize(z, dim=-1)
+    #     # Cosine similarity loss quy đổi: 2 - 2 * cos_sim
+    #     return 2 - 2 * (p * z.detach()).sum(dim=-1)
+
+    # ============================================
+    # EMA UPDATE
+    # ============================================
+
+    @torch.no_grad()
+    def update_ema(self):
+        
+        # Dùng momentum scheduler nếu có, không thì dùng tau cố định
+        if self._momentum_scheduler is not None:
+            try:
+                m = next(self._momentum_scheduler)
+            except StopIteration:
+                m = self.tau_end  # sau khi hết scheduler, giữ ở tau_end
+        else:
+            m = self.tau
+
+        # encoder EMA
+        for online, target in zip(
+            self.online_encoder.parameters(),
+            self.target_encoder.parameters()
+        ):
+            target.data.mul_(m).add_(online.data, alpha=1 - m)
+
+        # projector EMA
+        for online, target in zip(
+            self.projector.parameters(),
+            self.target_projector.parameters()
+        ):
+            target.data.mul_(m).add_(online.data, alpha=1 - m)
+
+    # ============================================
+    # Lifecycle hook
+    # ============================================
+
+    def on_train_batch_end(self, **kwargs):
+        self.update_ema()
+
+    # ============================================
+    # FORWARD (Chuẩn hóa theo flow code gốc)
+    # ============================================
+
+    def forward(self, shared_output, x, x_aug, mask_x, mask_y):
+        """
+        shared_output: out_enc của nhánh Online nhận x_aug [B, C, N, D]
+        batch[0]: Dữ liệu gốc x (chưa qua augmentation)
+        """
+        B = x.shape[0] # Lấy kích thước Batch thực tế
+        device = x.device
+        # Tự động khởi tạo mảng ID tuần tự giống hệt như code mẫu làm trong training_step
+        id_tensor = torch.arange(B, device=device)
+
+        # =====================================
+        # 1. NHÁNH ONLINE (Từ x_aug)
+        # =====================================
+        # shared_output chính là kết quả của Online Encoder khi nhận x_aug
+        z_online = self.projector(shared_output)   
+        p_online = self.predictor(z_online)    
+        p_online = self.pool(p_online)
+
+        # =====================================
+        # 2. NHÁNH TARGET EMA 
+        # =====================================
+        x2 = augmentation(x)
+        with torch.no_grad():
+            # ema_mask = mask_x
+            ema_mask, _ = make_masks(
+                self.online_encoder.encoder.num_patches, 
+                p_n_y=0.1, 
+                p_c_y=0.1
+            )
+
+            # Khởi chạy Target Encoder trên dữ liệu gốc x
+            h_target = self.target_encoder(x2, self.online_encoder.chans_id.to(x2) , mask_x=ema_mask)
+            p_target = self.target_projector(h_target) 
+            p_target = self.pool(p_target)
+
+        # =====================================
+        # 3. TÍNH TOÁN LOSS
+        # =====================================
+        # Detach target giống BYOL — chỉ online branch được backprop
+        loss, loss_koleo = id_loss(
+            z1=p_online,
+            z2=p_target.detach(),
+            id=id_tensor,
+            temperature=self.temperature,
+            koleo_weight=self.koleo_weight,
+        )
+ 
+        return {
+            "loss": loss,
+            "loss_koleo": loss_koleo,   # optional: để BaseModule log nếu muốn
+        }
+
+ # ============================================
+# Loss functions 
+# ============================================
+
+def _koleo_one_view(z: torch.Tensor, eps: float = 1e-12) -> torch.Tensor:
+    """
+    KoLeo cho một view (Đúng logic code mẫu):
+    L = -(1/N) * sum_i log( min_{j!=i} ||z_i - z_j||^2 )
+    """
+    B = z.size(0)
+    if B < 2:
+        return z.new_tensor(0.0)
+
+    # Sử dụng bình phương khoảng cách Euclidean theo đúng mẫu, không dùng (1 - sim)
+    dist2 = torch.cdist(z, z, p=2).pow(2)
+
+    # Loại bỏ đường chéo bằng cách điền +inf
+    dist2.fill_diagonal_(float('inf'))
+
+    # Tìm khoảng cách nhỏ nhất tới neighbor
+    nn2, _ = dist2.min(dim=1)
+
+    # KoLeo loss
+    loss = -torch.mean(torch.log(nn2 + eps))
+    return loss
+
+
+def koleo_reg(z1: torch.Tensor, z2: torch.Tensor, eps: float = 1e-12) -> torch.Tensor:
+    """
+    Tính KoLeo regularizer trung bình trên cả 2 views.
+    """
+    return 0.5 * (_koleo_one_view(z1, eps) + _koleo_one_view(z2, eps))
+
+
+def id_loss(z1, z2, id, temperature=0.1, decoupled=False, koleo_weight=0.1):
+    '''
+    Tính Contrastive Loss dựa trên Subject ID pairing kết hợp với KoLeo (Đúng logic mẫu).
+    '''
+    device = z1.device
+    B, D = z1.shape
+    
+    # Giữ nguyên việc tính KoLeo trên embedding GỐC (trước khi chuẩn hóa l2) theo code mẫu
+    loss_koleo = koleo_reg(z1, z2)
+    
+    # Chuẩn hóa l2 phục vụ cho Contrastive Loss
+    z1_norm = F.normalize(z1, dim=1)
+    z2_norm = F.normalize(z2, dim=1)
+    id = id.to(device)
+
+    def one_direction_loss(exp_sim, id):
+        loss = 0.0
+        num_valid_anchors = 0
+        
+        # Tạo mask tương tác ID: pos_mask[i, j] = True nếu id[i] == id[j]
+        # Sử dụng vòng lặp theo đúng logic xử lý mask và phân tách mẫu (decoupled) của code mẫu
+        for i in range(B):
+            pos_mask = (id == id[i])
+            num_pos = pos_mask.sum().item()
+            if num_pos == 0:
+                continue
+                
+            pos_exp = exp_sim[i][pos_mask]
+            all_sum = exp_sim[i].sum()
+            
+            if decoupled:
+                denoms = all_sum - pos_exp
+                denoms = torch.clamp(denoms, min=1e-6)
+                log_probs = torch.log(pos_exp / denoms)
+            else:
+                denom = all_sum
+                log_probs = torch.log(pos_exp / denom)
+                
+            loss += -log_probs.mean()
+            num_valid_anchors += 1
+            
+        if num_valid_anchors == 0:
+            return torch.tensor(0.0, device=device)
+        return loss / num_valid_anchors
+
+    # Hướng 1: z1 làm anchor, z2 làm targets
+    sim12 = torch.mm(z1_norm, z2_norm.T) / temperature
+    exp_sim12 = torch.exp(sim12)
+    l12 = one_direction_loss(exp_sim12, id)
+
+    # Hướng 2: z2 làm anchor, z1 làm targets
+    sim21 = torch.mm(z2_norm, z1_norm.T) / temperature
+    exp_sim21 = torch.exp(sim21)
+    l21 = one_direction_loss(exp_sim21, id)
+
+    # Tính toán contrastive loss tổng hợp từ 2 hướng
+    loss_nce = (l12 + l21) / 2
+    
+    # Kết hợp tổng loss với trọng số tương tự cấu trúc hiện tại của bạn
+    loss_total = loss_nce + koleo_weight * loss_koleo
+
+    return loss_total, loss_koleo
+```
+
+---
+
+
+## `src/pretrain_module/eegpt/task/contrastive.py`
+
+**Đường dẫn đầy đủ:** `/home/infres/ttran-25/eegfm/src/pretrain_module/eegpt/task/contrastive.py`  
+**Kích thước:** `1.9 KB`  
+**Loại:** `.py`
+
+```python
+import torch.nn as nn
+import torch.nn.functional as F
+from .base_task import BaseTask
+
+class ContrastiveTask(BaseTask):
+
+    def __init__(self, model, d_model, proj_dim=128, temperature=0.5):
+        super().__init__()
+
+        self.model = model
+        self.projector = ProjectionHead(d_model, proj_dim)
+        self.loss_fn = NTXentLoss(temperature)
+
+    def forward(self, shared_output, batch):
+
+        # 1. create 2 views
+        x1 = batch[0]
+        x2 = augmentation(batch[0])
+
+        # 2. forward backbone
+        h1 = self.model(x1, return_mask=False)["latent"]
+        h2 = self.model(x2, return_mask=False)["latent"]
+
+        # 3. pooling
+        h1 = h1.mean(dim=1)
+        h2 = h2.mean(dim=1)
+
+        # 4. projection
+        z1 = self.projector(h1)
+        z2 = self.projector(h2)
+
+        # 5. loss
+        loss = self.loss_fn(z1, z2)
+
+        return {"loss": loss}
+
+class ProjectionHead(nn.Module):
+    def __init__(self, d_model, proj_dim=128):
+        super().__init__()
+        self.net = nn.Sequential(
+            nn.Linear(d_model, d_model),
+            nn.ReLU(),
+            nn.Linear(d_model, proj_dim)
+        )
+
+    def forward(self, x):
+        return self.net(x)
+
+class NTXentLoss(nn.Module):
+    def __init__(self, temperature=0.5):
+        super().__init__()
+        self.t = temperature
+
+    def forward(self, z1, z2):
+        """
+        z1, z2: [B, D]
+        """
+        B = z1.size(0)
+
+        z1 = F.normalize(z1, dim=1)
+        z2 = F.normalize(z2, dim=1)
+
+        z1 = z1.mean(dim=1)
+        z2 = z2.mean(dim=1)
+
+        z = torch.cat([z1, z2], dim=0)  # [2B, D]
+
+        sim = torch.matmul(z, z.T) / self.t  # [2B, 2B]
+
+        mask = torch.eye(2 * B, device=z.device).bool()
+        sim = sim.masked_fill(mask, -1e9)
+
+        pos = torch.cat([
+            torch.arange(B, 2*B),
+            torch.arange(0, B)
+        ]).to(z.device)
+
+        loss = F.cross_entropy(sim, pos)
+        return loss
+```
+
+---
+
+
+## `src/pretrain_module/eegpt/task/reconstruction.py`
+
+**Đường dẫn đầy đủ:** `/home/infres/ttran-25/eegfm/src/pretrain_module/eegpt/task/reconstruction.py`  
+**Kích thước:** `1.6 KB`  
+**Loại:** `.py`
+
+```python
+import torch.nn as nn
+
+from .base_task import BaseTask
+from src.models.eegpt.eegpt import *
+
+class ReconstructionTask(BaseTask):
+
+    def __init__(self, online_encoder, models_configs):
+        super().__init__()
+
+        self.online_encoder = online_encoder
+        self.models_configs = models_configs
+
+        self.predictor = EEGTransformerPredictor(
+                norm_layer=partial(nn.LayerNorm, eps=1e-6),
+                **models_configs['predictor'])
+
+        self.reconstructor = EEGTransformerReconstructor(
+                norm_layer=partial(nn.LayerNorm, eps=1e-6),
+                **models_configs['reconstructor'])
+
+        self.loss_fn = nn.MSELoss()
+
+    def forward(self, shared_output, x, x_aug, mask_x, mask_y):
+        out_pred_fake, out_pred_comb = self.predictor(shared_output, mask_x=mask_x)
+        out_rec = self.reconstructor(out_pred_comb, self.online_encoder.chans_id.to(x_aug), mask_y=mask_y)
+
+        C, N = self.models_configs['num_patches']
+        assert x_aug.shape[-1]%N==0 and x_aug.shape[-2]%C == 0
+        block_size_c, block_size_n = x_aug.shape[-2]//C, x_aug.shape[-1]//N
+        x_aug = x_aug.view(x_aug.shape[0], C, block_size_c, N, block_size_n)
+        x_aug = x_aug.permute(0, 3, 1, 2, 4).contiguous() # B, N, C, bc, bn
+        x_aug = x_aug.view(x_aug.shape[0], C, N, block_size_c * block_size_n)
+        
+        out_rec_true = apply_mask(mask_y.to(x_aug.device), x_aug)
+        out_rec_true = F.layer_norm(out_rec_true, (out_rec_true.size(-1),))
+
+        loss = self.loss_fn(out_rec, out_rec_true)
+
+        return {
+            "loss": loss
+        }
 ```
 
 ---

@@ -1,38 +1,26 @@
+# configs/config.yaml
 defaults:
   - _self_
   - dataset: pretraining_lmdb/v1
   - model: cbramod/pretrain
-  - tasks: both
-  - weight_method: famo
+  - tasks: contrastive_only  # hoặc reconstruction_only, contrastive_only
+  - weight_method: linear
   - hydra: pretrain
 
 seed: 42
-
 module:
   name: cbramod_pretrain_module
-
-# ======================
-# data
-# ======================
 
 data:
   batch_size: 64
   num_workers: 4
   patch_size: 200
 
-# ======================
-# trainer
-# ======================
-
 trainer:
   max_epochs: 20
   accelerator: auto
   devices: 1
   precision: 32
-
-# ======================
-# optimizer
-# ======================
 
 optimizer:
   name: adamw
@@ -41,4 +29,3 @@ optimizer:
 
 scheduler:
   name: cosine
-

@@ -1,3 +1,0 @@
-name: pretraining_lmdb
-scale_div: 100
-datasets_dir: /home/infres/tran-24/EEGPT_MTL/tueg_16s_200fs_60notch_test
