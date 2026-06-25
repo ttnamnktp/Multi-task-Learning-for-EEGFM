@@ -1,0 +1,30 @@
+defaults:
+  - _self_
+  - dataset: bciciv2a/v1
+  - model: eegpt/downstream_L_822
+  - hydra: downstream
+  
+seed: 42
+
+module:
+  name: classification
+
+data:
+  batch_size: 64
+  num_workers: 4
+
+trainer:
+  max_epochs: 50
+  accelerator: auto
+  devices: 1
+  precision: 32
+
+optimizer:
+  name: adamw
+  encoder_lr: 1e-6
+  head_lr: 1e-3
+  adapter_lr: 1e-3
+  weight_decay: 1e-2
+
+scheduler:
+  name: cosine

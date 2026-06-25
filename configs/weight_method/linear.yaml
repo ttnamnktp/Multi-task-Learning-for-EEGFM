@@ -2,3 +2,4 @@ name: linear
 task_weights:
     reconstruction: 0.5
     byol: 0.5
+    byol_reg: 0.5

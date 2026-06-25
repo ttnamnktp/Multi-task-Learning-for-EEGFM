@@ -10,6 +10,8 @@ from src.models.cbramod.cbramod import CBraMod
 from .task.reconstruction import ReconstructionTask
 from .task.contrastive import ContrastiveTask
 from .task.byol import ContrastiveBYOLTask
+from .task.byol_reg import BYOLRegTask
+
 from .utils import augmentation, make_mask
 
 @register_module("cbramod_pretrain_module")
@@ -56,17 +58,45 @@ class CBraModPretrain(BaseModule):
             )
             print("[INFO] ✓ Contrastive task enabled")
         
+        total_steps = None
+        try:
+            steps_per_epoch = len(self.trainer.datamodule.train_dataloader())
+            max_epochs = self.trainer.max_epochs
+            total_steps = int(steps_per_epoch * max_epochs) + 1
+            print(f"[DEBUG] Total step: {total_steps}")
+        except Exception:
+            total_steps = 50000
+            print(f"[DEBUG] Total step is set to {total_steps}")
+
         # BYOL task
         if task_configs.get("byol", {}).get("enabled", False):
             byol_cfg = task_configs["byol"]
+ 
             tasks["byol"] = ContrastiveBYOLTask(
                 online_encoder=self.model,
                 d_model=model_cfg["d_model"],
                 proj_dim=byol_cfg.get("proj_dim", 256),
                 hidden_dim=byol_cfg.get("hidden_dim", 512),
-                tau=byol_cfg.get("tau", 0.996)
+                tau=byol_cfg.get("tau", 0.996),
+                tau_end=byol_cfg.get("tau_end", 0.999),
+                total_steps=total_steps,   
             )
             print("[INFO] ✓ BYOL task enabled")
+
+        # BYOL Reg task
+        if task_configs.get("byol_reg", {}).get("enabled", False):
+            byol_cfg = task_configs["byol_reg"]
+ 
+            tasks["byol_reg"] = BYOLRegTask(
+                online_encoder=self.model,
+                d_model=model_cfg["d_model"],
+                proj_dim=byol_cfg.get("proj_dim", 256),
+                hidden_dim=byol_cfg.get("hidden_dim", 512),
+                tau=byol_cfg.get("tau", 0.996),
+                tau_end=byol_cfg.get("tau_end", 0.999),
+                total_steps=total_steps,
+            )
+            print("[INFO] ✓ BYOL REG task enabled")
         
         if len(tasks) == 0:
             raise ValueError("At least one task must be enabled!")
@@ -81,9 +111,7 @@ class CBraModPretrain(BaseModule):
 
         # CBraMod-specific preprocessing
         x_aug = augmentation(x)
-        mask = make_mask(x, mask_ratio=0.5)
-
-        print(f"mask shape: {mask.shape}, x shape: {x.shape}, x_aug shape: {x_aug.shape}")
+        mask = make_mask(x, mask_ratio=0.4)
         
         # Forward pass
         shared_output = self.model(x_aug, mask=mask)

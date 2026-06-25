@@ -2,7 +2,7 @@ import hydra
 import lightning as L
 from omegaconf import DictConfig
 from lightning.pytorch.loggers import TensorBoardLogger
-from lightning.pytorch.callbacks import ModelCheckpoint
+from lightning.pytorch.callbacks import ModelCheckpoint, LearningRateMonitor
 from hydra.core.hydra_config import HydraConfig
 import os
 
@@ -32,13 +32,18 @@ def main(cfg: DictConfig):
     # 3. Callbacks
     ckpt = ModelCheckpoint(
         dirpath=os.path.join(hydra_dir, "checkpoints"),
-        monitor="valid_loss",   # dùng đúng metric pretrain
+        monitor="valid/average_valid_loss",   # dùng đúng metric pretrain
         mode="min",
         save_top_k=1,
-        filename="best-{epoch}-{valid_loss:.4f}",
-        verbose=True
+        filename="best-{epoch}-{valid/average_valid_loss:.4f}",
+        verbose=True,
+        save_last=True,
     )
     print("Checkpoint dir:", ckpt.dirpath)
+
+    lr_monitor = LearningRateMonitor(
+        logging_interval="step"
+    )
 
     # 4. Khởi tạo Trainer
     trainer = L.Trainer(
@@ -47,9 +52,10 @@ def main(cfg: DictConfig):
         devices=cfg.trainer.devices,
         precision=cfg.trainer.precision,
         logger=logger,
-        callbacks=[ckpt],
+        callbacks=[ckpt, lr_monitor],
         gradient_clip_val=1.0,
-        gradient_clip_algorithm="norm"
+        gradient_clip_algorithm="norm",
+        num_sanity_val_steps=cfg.trainer.num_sanity_val_steps
     )
 
     trainer.fit(model, datamodule=datamodule)

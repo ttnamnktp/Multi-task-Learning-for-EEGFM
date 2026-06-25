@@ -1,0 +1,48 @@
+defaults:
+  - _self_
+  - dataset: pretraining_lmdb/main
+  - model: cbramod/L12_8
+  - weight_method: famo
+  - hydra: pretrain
+
+seed: 42
+module:
+  name: cbramod_pretrain_module
+
+tasks:
+  reconstruction:
+    enabled: true
+  contrastive:
+    enabled: false
+  byol:
+    enabled: false
+  byol_reg:
+    enabled: true
+    
+data:
+  batch_size: 64
+  num_workers: 4
+
+trainer:
+  max_epochs: 50
+  accelerator: auto
+  devices: 1
+  precision: 32
+  num_sanity_val_steps: 0
+
+# use one_cycle scheduler
+optimizer:
+  name: adamw
+  weight_decay: 0.01
+
+scheduler:
+# note: auto use one cycle scheduler
+  max_lr: 5e-5
+  div_factor: 5
+  final_div_factor: 50
+  pct_start: 0.35
+
+grad_monitor:
+  enabled: true
+  ema_alpha: 0.1
+  log_every_n: 4000

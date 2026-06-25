@@ -2,9 +2,12 @@
 import lightning as L
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 from abc import ABC, abstractmethod
 from typing import Dict, Any, List, Optional
 from src.mtl.mtl import WeightMethodManager
+from src.mtl.gradient_monitor import MTLGradientMonitor
+from src.mtl.mtl import LinearScalarWeighting, FAMOWeighting, OGRWeighting
 
 class BaseModule(L.LightningModule, ABC):
     """
@@ -24,7 +27,11 @@ class BaseModule(L.LightningModule, ABC):
         self.model = None
         self.tasks = None
         self.weight_method_manager = None
+
         self._current_losses = None
+        self._train_losses_accum: Dict[str, List[float]] = {}
+        self._val_losses_accum:   Dict[str, List[float]] = {}
+        self._last_train_epoch_losses: Dict[str, float] = {} # thêm
     
     @abstractmethod
     def _build_model(self, cfg) -> nn.Module:
@@ -71,7 +78,6 @@ class BaseModule(L.LightningModule, ABC):
         Factory method to create weight method from config.
         Can be overridden by subclasses if needed.
         """
-        from src.mtl.mtl import LinearScalarWeighting, FAMOWeighting
         
         method_name = cfg.get("weight_method", {}).get("name", "linear")
         task_names = list(self.tasks.keys())
@@ -104,7 +110,14 @@ class BaseModule(L.LightningModule, ABC):
                 task_names=task_names,
                 gamma=params.get("gamma", 1e-5),
                 w_lr=params.get("w_lr", 0.025),
-                max_norm=params.get("max_norm", 1.0),
+            )
+        elif method_name == "ogr":
+            params = cfg.get("weight_method", {})
+            weight_method = OGRWeighting(
+                n_tasks=n_tasks,
+                device=self.device,
+                task_names=task_names,
+                softmax_temp=params.get("softmax_temp", 0.01),
             )
         else:
             raise ValueError(f"Unknown weight method: {method_name}")
@@ -125,7 +138,18 @@ class BaseModule(L.LightningModule, ABC):
         
         # 3. Initialize weight method
         self.weight_method_manager = self._build_weight_method(self.cfg)
-    
+
+        # 4. Gradient monitor (opt-in via config)
+        monitor_cfg = self.cfg.get("grad_monitor", {})
+        if monitor_cfg.get("enabled", False):
+            self.grad_monitor = MTLGradientMonitor(
+                ema_alpha=monitor_cfg.get("ema_alpha", 0.1),
+                log_every_n=monitor_cfg.get("log_every_n", 50),
+            )
+            print(f"[INFO] MTLGradientMonitor enabled — log_every_n={self.grad_monitor.log_every_n}")
+        else:
+            self.grad_monitor = None
+        
     # ==========================================
     # Lightning Lifecycle Hooks
     # ==========================================
@@ -149,16 +173,36 @@ class BaseModule(L.LightningModule, ABC):
             batch=batch
         )
         
-        # Step 3: Compute weighted loss
-        weighted_loss = self.weight_method_manager.compute_weighted_loss(
-            losses=loss_dict,
-            model=self.model,
-            batch=batch,
-            tasks=self.tasks
+        # Step 3: Compute loss
+        weighted_loss, weighted_losses = (
+            self.weight_method_manager.compute_weighted_loss(
+                losses=loss_dict,
+                model=self.model,
+                batch=batch,
+                tasks=self.tasks
+            )
         )
-        
-        # Step 4: Logging
-        self._log_training_metrics(loss_dict)
+
+        # Step 4: COMPUTE TASK GRADIENTS (BEFORE BACKWARD)
+        grad_metrics = None
+        if (
+            self.grad_monitor is not None
+            and self.global_step % self.grad_monitor.log_every_n == 0
+        ):
+            task_grads = self._compute_task_gradients(
+                weighted_losses=weighted_losses,
+                total_loss=weighted_loss,
+            )
+            grad_metrics = self.grad_monitor.compute_gradient_metrics(task_grads)
+
+        # Step 5: Logging
+        self._log_training_metrics(
+            loss_dict=loss_dict,
+            grad_metrics=grad_metrics,
+        )
+
+        for task_name, loss in loss_dict.items():
+            self._train_losses_accum.setdefault(task_name, []).append(loss.detach().item())
         
         return weighted_loss
     
@@ -168,23 +212,25 @@ class BaseModule(L.LightningModule, ABC):
 
         for task_name, loss in loss_dict.items():
             self.log(
-                f"valid/{task_name}_loss",
+                f"valid/{task_name}_valid_loss",
                 loss,
                 on_step=False,
                 on_epoch=True,
                 sync_dist=True
             )
         
-        valid_loss = torch.stack(list(loss_dict.values())).mean()
-
+        valid_loss = torch.stack([l.detach() for l in loss_dict.values()]).mean()
         self.log(
-            "valid_loss",
+            "valid/average_valid_loss",
             valid_loss,
             prog_bar=True,
             on_step=False,
             on_epoch=True,
             sync_dist=True
         )
+
+        for task_name, loss in loss_dict.items():
+            self._val_losses_accum.setdefault(task_name, []).append(loss.detach().item())
 
         return valid_loss
     
@@ -208,9 +254,11 @@ class BaseModule(L.LightningModule, ABC):
                 model=self.model,
                 tasks=self.tasks
             )
-    
+
     def on_train_batch_end(self, outputs, batch, batch_idx):
         """Lightning hook - called after training_step."""
+        self._current_losses = None
+
         for task_name, task in self.tasks.items():
             if hasattr(task, 'on_train_batch_end'):
                 task.on_train_batch_end(
@@ -218,7 +266,48 @@ class BaseModule(L.LightningModule, ABC):
                     batch=batch,
                     batch_idx=batch_idx
                 )
-    
+
+    def on_train_epoch_end(self):
+        """Compute epoch-level training loss dynamics."""
+        train_losses = {
+            k: sum(v) / len(v)
+            for k, v in self._train_losses_accum.items()
+            if v
+        }
+
+        self._last_train_epoch_losses = train_losses
+
+        if self.grad_monitor is not None and len(train_losses) > 0:
+            metrics = self.grad_monitor.compute_epoch_loss_dynamics(train_losses)
+            for k, v in metrics.items():
+                self.log(
+                    f"gradient_monitor/{k}",
+                    v,
+                    on_step=False,
+                    on_epoch=True,
+                    sync_dist=True
+                )
+
+        self._train_losses_accum.clear()
+
+    def on_validation_epoch_end(self):
+        """Called after validation epoch ends."""
+        val_losses = {
+            k: sum(v) / len(v)
+            for k, v in self._val_losses_accum.items() if v
+        }
+
+        # Trigger OGR (or any method needing train/val epoch losses)
+        self.weight_method_manager.trigger_lifecycle_hooks(
+            "on_validation_epoch_end",
+            losses={},
+            model=self.model,
+            train_losses=self._last_train_epoch_losses,
+            val_losses=val_losses,
+        )
+
+        self._val_losses_accum.clear()
+        
     # ==========================================
     # Optimizer Configuration
     # ==========================================
@@ -228,7 +317,7 @@ class BaseModule(L.LightningModule, ABC):
         Optimizer chỉ lấy:
         - model params
         - task params
-        - weight method params (FAMO / Linear / etc.)
+        - weight method params (nếu có)
         """
         # 1. Model parameters
         model_params = list(self.model.parameters())
@@ -238,52 +327,35 @@ class BaseModule(L.LightningModule, ABC):
         for task in self.tasks.values():
             task_params += list(task.parameters())
 
-        # 3. Weight method parameters (FAMO.w, etc.)
+        # 3. Weight method parameters 
         weight_method_param_groups = self.weight_method_manager.get_optimizer_parameters()
 
         # 4. Combine
         param_groups = [
             {
                 "params": model_params + task_params,
-                # "lr": self.cfg.optimizer.lr,
                 "weight_decay": self.cfg.optimizer.weight_decay,
             }
         ]
 
         # add weight method param groups (nếu có)
         param_groups.extend(weight_method_param_groups)
-
         optimizer = torch.optim.AdamW(param_groups)
 
-        # scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
-        #     optimizer,
-        #     T_max=self.trainer.estimated_stepping_batches
-        # )
-
-        # Define params
-        # self.max_lr = 1e-4
-        self.max_lr = self.cfg.scheduler.max_lr
-        self.div_factor = self.cfg.scheduler.div_factor
-        self.final_div_factor = self.cfg.scheduler.final_div_factor
-        self.pct_start =  self.cfg.scheduler.pct_start
-
-        epochs = self.trainer.max_epochs
-        steps_per_epoch = len(self.trainer.datamodule.train_dataloader())
-
+        # Define lr_scheduler
         lr_scheduler = torch.optim.lr_scheduler.OneCycleLR(optimizer, 
-            max_lr=self.max_lr, 
-            steps_per_epoch=steps_per_epoch, 
-            epochs=epochs,
-            div_factor = self.div_factor,
-            final_div_factor=self.final_div_factor,
-            pct_start = self.pct_start ,
-            )
+            max_lr = self.cfg.scheduler.max_lr, 
+            steps_per_epoch = len(self.trainer.datamodule.train_dataloader()), 
+            epochs = self.trainer.max_epochs,
+            div_factor = self.cfg.scheduler.div_factor,
+            final_div_factor = self.cfg.scheduler.final_div_factor,
+            pct_start = self.cfg.scheduler.pct_start,
+        )
+
         lr_dict = {
             'scheduler': lr_scheduler, # The LR scheduler instance (required)
-            # The unit of the scheduler's step size, could also be 'step'
-            'interval': 'step',
+            'interval': 'step', # The unit of the scheduler's step size, could also be 'step'
             'frequency': 1, # The frequency of the scheduler
-            # 'monitor': 'valid_loss', # Metric for `ReduceLROnPlateau` to monitor
             'strict': True, # Whether to crash the training if `monitor` is not found
             'name': None, # Custom name for `LearningRateMonitor` to use
         }
@@ -297,7 +369,11 @@ class BaseModule(L.LightningModule, ABC):
     # Helper Methods
     # ==========================================
     
-    def _log_training_metrics(self, loss_dict: Dict[str, torch.Tensor]):
+    def _log_training_metrics(
+        self,
+        loss_dict: Dict[str, torch.Tensor],
+        grad_metrics: Optional[Dict[str, torch.Tensor]] = None,
+    ):
         """Log training metrics. Can be overridden for custom logging."""
         # Log individual task losses
         for task_name, loss in loss_dict.items():
@@ -308,31 +384,74 @@ class BaseModule(L.LightningModule, ABC):
                 on_step=False
             )
 
-        monitor_metrics = (
+        weight_method_metrics = (
             self.weight_method_manager
                 .get_monitoring_metrics(loss_dict)
         )
 
-        for key, value in monitor_metrics.items():
-
+        for key, value in weight_method_metrics.items():
             self.log(
-                f"train/{key}",
+                f"weight_method/{key}",
                 value,
                 on_epoch=True,
                 on_step=False,
                 prog_bar=(key == "average_loss")
             )
-        
-        # # Log weighted loss
-        # self.log(
-        #     "train/loss",
-        #     weighted_loss,
-        #     prog_bar=True,
-        #     on_epoch=True,
-        #     on_step=False
-        # )
-        
-        # # Log weight method metrics
-        # weight_metrics = self.weight_method_manager.get_logging_dict()
-        # for key, value in weight_metrics.items():
-        #     self.log(f"train/{key}", value, on_epoch=True, on_step=False)
+
+        # Log gradient metrics only
+        if grad_metrics is not None:
+            for k, v in grad_metrics.items():
+                self.log(
+                    f"gradient_monitor/{k}",
+                    v,
+                    on_step=False,
+                    on_epoch=True
+                )
+            
+    def _compute_task_gradients(
+        self,
+        total_loss=None,
+        weighted_losses=None,
+    ):
+        """
+        Compute per-task gradients on encoder BEFORE backward.
+        """
+        params = [p for p in self.model.parameters() if p.requires_grad]
+
+        # Weighted-task grads
+        task_grads = {}
+
+        for task_name, loss in weighted_losses.items():
+            grads = torch.autograd.grad(
+                loss,
+                params,
+                retain_graph=True,
+                allow_unused=True,
+            )
+            flat = []
+            for g, p in zip(grads, params):
+                if g is None:
+                    flat.append(torch.zeros_like(p).flatten())
+                else:
+                    flat.append(g.detach().flatten())
+            task_grads[task_name] = torch.cat(flat)
+
+        # total grads
+        grads = torch.autograd.grad(
+            total_loss,
+            params,
+            retain_graph=True,
+            allow_unused=True
+        )
+        flat = []
+        for g, p in zip(grads, params):
+            if g is None:
+                flat.append(torch.zeros_like(p).flatten())
+            else:
+                flat.append(g.detach().flatten())
+        total_grad = torch.cat(flat)
+
+        return {
+            "task_grads": task_grads,
+            "total_grad": total_grad,
+        }

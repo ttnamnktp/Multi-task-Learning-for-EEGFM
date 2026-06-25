@@ -1,0 +1,51 @@
+defaults:
+  - _self_
+  - dataset: pretraining_lmdb/main
+  - model: eegpt/L_822
+  - weight_method: famo
+  - hydra: pretrain
+
+seed: 42
+module:
+  name: eegpt_pretrain_module
+
+tasks:
+  reconstruction:
+    enabled: true
+  contrastive:
+    enabled: false
+  byol:
+    enabled: true
+  byol_reg:
+    enabled: false
+  byol_original:
+    enabled: false
+    
+data:
+  batch_size: 64
+  num_workers: 4
+
+trainer:
+  max_epochs: 50
+  accelerator: auto
+  devices: 1
+  precision: 32
+  num_sanity_val_steps: 0
+
+# use one_cycle scheduler
+optimizer:
+  name: adamw
+  weight_decay: 0.01
+
+scheduler:
+# note: auto use one cycle scheduler
+  max_lr: 1e-4
+  div_factor: 5
+  final_div_factor: 2
+  pct_start: 0.20
+
+grad_monitor:
+  enabled: true
+  ema_alpha: 0.1
+  log_every_n: 4000
+  # log_every_n: 100_000_000 # không tính grads

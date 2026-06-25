@@ -1,350 +1,121 @@
-# ============================================
-# contrastive_byol_task.py
-# ============================================
-
 import copy
+import math
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from .base_task import BaseTask
 from src.pretrain_module.eegpt.utils import augmentation, make_masks
 
-# ============================================
-# Projection Head
-# ============================================
-
-class ProjectionHead(nn.Module):
-
-    def __init__(self, in_dim, hidden_dim=512, out_dim=256):
+class OriginalBYOLTask(nn.Module):
+    def __init__(self, online_encoder, d_model, proj_dim=256, hidden_dim=4096, tau_base=0.996, total_steps=100000):
         super().__init__()
-
-        self.layer1 = nn.Linear(in_dim, hidden_dim)
-        self.norm = nn.LayerNorm(hidden_dim)
-        self.act = nn.GELU()
-        self.layer2 = nn.Linear(hidden_dim, out_dim)
-
-    def forward(self, x):
-        x = self.layer1(x)
-        x = self.norm(x)
-        x = self.act(x)
-        x = self.layer2(x)
-        return x
-
-# ============================================
-# Predictor
-# ============================================
-
-class Predictor(nn.Module):
-
-    def __init__(self, in_dim=256, hidden_dim=512):
-        super().__init__()
-
-        self.layer1 = nn.Linear(in_dim, hidden_dim)
-        self.norm = nn.LayerNorm(hidden_dim)
-        self.act = nn.GELU()
-        self.layer2 = nn.Linear(hidden_dim, in_dim)
-
-    def forward(self, x):
-        x = self.layer1(x)
-        x = self.norm(x)
-        x = self.act(x)
-        x = self.layer2(x)
-        return x
-
-
-# ============================================
-# BYOL Task
-# ============================================
-
-class ContrastiveBYOLTask(BaseTask):
-
-    def __init__(
-        self,
-        online_encoder,
-        d_model,
-        proj_dim=256,
-        hidden_dim=512,
-        tau=0.996,
-        tau_end=0.999,
-        total_steps=None,
-        temperature=0.1,       # thêm: nhiệt độ cho id_loss
-        koleo_weight=0.1,      # thêm: trọng số KoLeo, giống hệ số 0.1 trong B
-    ):
-        super().__init__()
-
-        # Tạo momentum scheduler giống chương trình B nếu total_steps được cung cấp
-        self.tau = tau
-        self.tau_end = tau_end
-        self.temperature = temperature
-        self.koleo_weight = koleo_weight
-
-        if total_steps is not None:
-            self._momentum_scheduler = iter(
-                tau + i * (tau_end - tau) / total_steps
-                for i in range(total_steps + 1)
-            )
-        else:
-            self._momentum_scheduler = None  # fallback về tau cố định
-
-        # =====================================
-        # ONLINE ENCODER REFERENCE
-        # =====================================
+        
         self.online_encoder = online_encoder
-
-        # =====================================
-        # TARGET ENCODER (EMA)
-        # =====================================
+        in_features = d_model  # 512
+        
+        # Bộ chiếu (Projector) và Bộ dự đoán (Predictor) chuẩn JAX Pseudo-code
+        self.online_projector = nn.Sequential(
+            nn.Linear(in_features, hidden_dim),
+            nn.BatchNorm1d(hidden_dim),
+            nn.ReLU(inplace=True),
+            nn.Linear(hidden_dim, proj_dim)
+        )
+        self.online_predictor = nn.Sequential(
+            nn.Linear(proj_dim, hidden_dim),
+            nn.BatchNorm1d(hidden_dim),
+            nn.ReLU(inplace=True),
+            nn.Linear(hidden_dim, proj_dim)
+        )
+        
+        # Mạng Target
         self.target_encoder = copy.deepcopy(online_encoder)
-        for p in self.target_encoder.parameters():
-            p.requires_grad = False
-
-        # =====================================
-        # ONLINE PROJECTOR
-        # =====================================
-        self.projector = ProjectionHead(
-            in_dim=d_model,
-            hidden_dim=hidden_dim,
-            out_dim=proj_dim
+        self.target_projector = nn.Sequential(
+            nn.Linear(in_features, hidden_dim),
+            nn.BatchNorm1d(hidden_dim),
+            nn.ReLU(inplace=True),
+            nn.Linear(hidden_dim, proj_dim)
         )
-
-        # =====================================
-        # ONLINE PREDICTOR
-        # =====================================
-        self.predictor = Predictor(
-            in_dim=proj_dim,
-            hidden_dim=hidden_dim
-        )
-
-        # =====================================
-        # TARGET PROJECTOR (EMA)
-        # =====================================
-        self.target_projector = copy.deepcopy(self.projector)
-        for p in self.target_projector.parameters():
-            p.requires_grad = False
-
-    # ============================================
-    # Pooling
-    # ============================================
-
-    def pool(self, h):
-        """
-        h: [B, C, N, D] hoặc [B, N, D] phụ thuộc vào chiều của tensor đầu ra.
-        Đoạn code gốc: out_enc.mean(dim=[1, 2]) áp dụng cho tensor 4D [B, C, N, D]
-        """
-        if h.dim() == 4:
-            return h.mean(dim=(1, 2))
-        elif h.dim() == 3:
-            return h.mean(dim=1)
-        return h
-
-    # ============================================
-    # BYOL LOSS
-    # ============================================
-   
-    # def byol_loss(self, p, z):
-    #     p = F.normalize(p, dim=-1)
-    #     z = F.normalize(z, dim=-1)
-    #     # Cosine similarity loss quy đổi: 2 - 2 * cos_sim
-    #     return 2 - 2 * (p * z.detach()).sum(dim=-1)
-
-    # ============================================
-    # EMA UPDATE
-    # ============================================
+        
+        self.target_projector.load_state_dict(self.online_projector.state_dict())
+        
+        # Khóa Gradient Target (Stop Gradient tương đương với toán tử sg trong bài báo)
+        for param in self.target_encoder.parameters():
+            param.requires_grad = False
+        for param in self.target_projector.parameters():
+            param.requires_grad = False
+            
+        self.tau_base = tau_base
+        self.total_steps = total_steps
+        self.current_step = 0
 
     @torch.no_grad()
-    def update_ema(self):
+    def update_target_network(self):
+        """Cập nhật mạng Target bằng EMA (tương đương ema_update trong JAX pseudo-code)"""
+        tau = 1 - (1 - self.tau_base) * (math.cos(math.pi * self.current_step / self.total_steps) + 1) / 2
+        self.current_step = min(self.current_step + 1, self.total_steps)
         
-        # Dùng momentum scheduler nếu có, không thì dùng tau cố định
-        if self._momentum_scheduler is not None:
-            try:
-                m = next(self._momentum_scheduler)
-            except StopIteration:
-                m = self.tau_end  # sau khi hết scheduler, giữ ở tau_end
-        else:
-            m = self.tau
+        for param_online, param_target in zip(self.online_encoder.parameters(), self.target_encoder.parameters()):
+            param_target.data.mul_(tau).add_(param_online.data, alpha=1.0 - tau)
+            
+        for param_online, param_target in zip(self.online_projector.parameters(), self.target_projector.parameters()):
+            param_target.data.mul_(tau).add_(param_online.data, alpha=1.0 - tau)
 
-        # encoder EMA
-        for online, target in zip(
-            self.online_encoder.parameters(),
-            self.target_encoder.parameters()
-        ):
-            target.data.mul_(m).add_(online.data, alpha=1 - m)
+    def regression_loss(self, q, z):
+        """Hàm loss MSE chuẩn hóa chính xác theo cấu trúc toán học của JAX Pseudo-code"""
+        q = F.normalize(q, dim=-1, p=2)
+        z = F.normalize(z, dim=-1, p=2)
+        # Công thức: mean(2 - 2 * sum(q * z, axis=-1))
+        return (2.0 - 2.0 * (q * z).sum(dim=-1)).mean()
 
-        # projector EMA
-        for online, target in zip(
-            self.projector.parameters(),
-            self.target_projector.parameters()
-        ):
-            target.data.mul_(m).add_(online.data, alpha=1 - m)
-
-    # ============================================
+    def _pool_representation(self, x_tensor):
+        return x_tensor.mean(dim=(1, 2))
+    
     # Lifecycle hook
-    # ============================================
-
     def on_train_batch_end(self, **kwargs):
-        self.update_ema()
+        self.update_target_network()
 
-    # ============================================
-    # FORWARD (Chuẩn hóa theo flow code gốc)
-    # ============================================
-
-    def forward(self, shared_output, x, x_aug, mask_x, mask_y):
+    def forward(self, shared_output, x, x_aug, mask_x=None, mask_y=None):
         """
-        shared_output: out_enc của nhánh Online nhận x_aug [B, C, N, D]
-        batch[0]: Dữ liệu gốc x (chưa qua augmentation)
+        shared_output: Đầu ra online nhận x_aug kèm mask_x (View 1)
         """
-        B = x.shape[0] # Lấy kích thước Batch thực tế
-        device = x.device
-        # Tự động khởi tạo mảng ID tuần tự giống hệt như code mẫu làm trong training_step
-        id_tensor = torch.arange(B, device=device)
-
-        # =====================================
-        # 1. NHÁNH ONLINE (Từ x_aug)
-        # =====================================
-        # shared_output chính là kết quả của Online Encoder khi nhận x_aug
-        z_online = self.projector(shared_output)   
-        p_online = self.predictor(z_online)    
-        p_online = self.pool(p_online)
-
-        # =====================================
-        # 2. NHÁNH TARGET EMA 
-        # =====================================
-        x2 = augmentation(x)
-        with torch.no_grad():
-            # ema_mask = mask_x
-            ema_mask, _ = make_masks(
-                self.online_encoder.encoder.num_patches, 
-                p_n_y=0.1, 
-                p_c_y=0.1
-            )
-
-            # Khởi chạy Target Encoder trên dữ liệu gốc x
-            h_target = self.target_encoder(x2, self.online_encoder.chans_id.to(x2) , mask_x=ema_mask)
-            p_target = self.target_projector(h_target) 
-            p_target = self.pool(p_target)
-
-        # =====================================
-        # 3. TÍNH TOÁN LOSS
-        # =====================================
-        # Detach target giống BYOL — chỉ online branch được backprop
-        # loss, loss_koleo = id_loss(
-        #     z1=p_online,
-        #     z2=p_target.detach(),
-        #     id=id_tensor,
-        #     temperature=self.temperature,
-        #     koleo_weight=self.koleo_weight,
-        # )
-        loss = id_loss(
-            z1=p_online,
-            z2=p_target.detach(),
-            id=id_tensor,
-            temperature=self.temperature,
-            koleo_weight=self.koleo_weight,
-        )
- 
-        # return {
-        #     "loss": loss,
-        #     "loss_koleo": loss_koleo,   # optional: để BaseModule log nếu muốn
-        # }
-        return {
-            "loss": loss,
-        }
-
- # ============================================
-# Loss functions 
-# ============================================
-
-def _koleo_one_view(z: torch.Tensor, eps: float = 1e-12) -> torch.Tensor:
-    """
-    KoLeo cho một view (Đúng logic code mẫu):
-    L = -(1/N) * sum_i log( min_{j!=i} ||z_i - z_j||^2 )
-    """
-    B = z.size(0)
-    if B < 2:
-        return z.new_tensor(0.0)
-
-    # Sử dụng bình phương khoảng cách Euclidean theo đúng mẫu, không dùng (1 - sim)
-    dist2 = torch.cdist(z, z, p=2).pow(2)
-
-    # Loại bỏ đường chéo bằng cách điền +inf
-    dist2.fill_diagonal_(float('inf'))
-
-    # Tìm khoảng cách nhỏ nhất tới neighbor
-    nn2, _ = dist2.min(dim=1)
-
-    # KoLeo loss
-    loss = -torch.mean(torch.log(nn2 + eps))
-    return loss
-
-
-def koleo_reg(z1: torch.Tensor, z2: torch.Tensor, eps: float = 1e-12) -> torch.Tensor:
-    """
-    Tính KoLeo regularizer trung bình trên cả 2 views.
-    """
-    return 0.5 * (_koleo_one_view(z1, eps) + _koleo_one_view(z2, eps))
-
-
-def id_loss(z1, z2, id, temperature=0.1, decoupled=False, koleo_weight=0.1):
-    '''
-    Tính Contrastive Loss dựa trên Subject ID pairing kết hợp với KoLeo (Đúng logic mẫu).
-    '''
-    device = z1.device
-    B, D = z1.shape
-    
-    # Giữ nguyên việc tính KoLeo trên embedding GỐC (trước khi chuẩn hóa l2) theo code mẫu
-    # loss_koleo = koleo_reg(z1, z2)
-    
-    # Chuẩn hóa l2 phục vụ cho Contrastive Loss
-    z1_norm = F.normalize(z1, dim=1)
-    z2_norm = F.normalize(z2, dim=1)
-    id = id.to(device)
-
-    def one_direction_loss(exp_sim, id):
-        loss = 0.0
-        num_valid_anchors = 0
+        # --- VIEW 1 ---
+        h_online_1 = self._pool_representation(shared_output) 
+        z_online_1 = self.online_projector(h_online_1)
+        q_online_1 = self.online_predictor(z_online_1)
         
-        # Tạo mask tương tác ID: pos_mask[i, j] = True nếu id[i] == id[j]
-        # Sử dụng vòng lặp theo đúng logic xử lý mask và phân tách mẫu (decoupled) của code mẫu
-        for i in range(B):
-            pos_mask = (id == id[i])
-            num_pos = pos_mask.sum().item()
-            if num_pos == 0:
-                continue
-                
-            pos_exp = exp_sim[i][pos_mask]
-            all_sum = exp_sim[i].sum()
+        # --- VIEW 2 ---
+        x_aug_2 = augmentation(x) 
+        
+        # Để tránh việc mô hình gian lận thông tin qua mask, ta tạo một mask ngẫu nhiên độc lập cho View 2
+        if mask_x is not None:
+            mask_x_2, _ = make_masks(self.online_encoder.encoder.num_patches, p_n_y=0.4, p_c_y=0.2)
+            mask_x_2 = mask_x_2.to(x_aug_2.device)
+        else:
+            mask_x_2 = None
             
-            if decoupled:
-                denoms = all_sum - pos_exp
-                denoms = torch.clamp(denoms, min=1e-6)
-                log_probs = torch.log(pos_exp / denoms)
-            else:
-                denom = all_sum
-                log_probs = torch.log(pos_exp / denom)
-                
-            loss += -log_probs.mean()
-            num_valid_anchors += 1
+        chan_ids = self.online_encoder.chans_id.to(x_aug_2)
+        shared_output_2 = self.online_encoder(x=x_aug_2, chan_ids=chan_ids, mask_x=mask_x_2)
+        
+        h_online_2 = self._pool_representation(shared_output_2)
+        z_online_2 = self.online_projector(h_online_2)
+        q_online_2 = self.online_predictor(z_online_2)
+        
+        # --- NHÁNH TARGET (Chặn gradient hoàn toàn qua khối torch.no_grad) ---
+        with torch.no_grad():
+            # Chạy View 1 (x_aug) qua Target với mask ban đầu của nó
+            target_output_1 = self.target_encoder(x=x_aug, chan_ids=chan_ids, mask_x=mask_x)
+            h_target_1 = self._pool_representation(target_output_1)
+            z_target_1 = self.target_projector(h_target_1)
             
-        if num_valid_anchors == 0:
-            return torch.tensor(0.0, device=device)
-        return loss / num_valid_anchors
-
-    # Hướng 1: z1 làm anchor, z2 làm targets
-    sim12 = torch.mm(z1_norm, z2_norm.T) / temperature
-    exp_sim12 = torch.exp(sim12)
-    l12 = one_direction_loss(exp_sim12, id)
-
-    # Hướng 2: z2 làm anchor, z1 làm targets
-    sim21 = torch.mm(z2_norm, z1_norm.T) / temperature
-    exp_sim21 = torch.exp(sim21)
-    l21 = one_direction_loss(exp_sim21, id)
-
-    # Tính toán contrastive loss tổng hợp từ 2 hướng
-    loss_nce = (l12 + l21) / 2
-    
-    # Kết hợp tổng loss với trọng số tương tự cấu trúc hiện tại của bạn
-    # loss_total = loss_nce + koleo_weight * loss_koleo
-    loss_total = loss_nce 
-
-    return loss_total
+            # Chạy View 2 (x_aug_2) qua Target với mask độc lập của nó
+            target_output_2 = self.target_encoder(x=x_aug_2, chan_ids=chan_ids, mask_x=mask_x_2)
+            h_target_2 = self._pool_representation(target_output_2)
+            z_target_2 = self.target_projector(h_target_2)
+            
+        # --- HÀM LOSS ĐỐI XỨNG (.detach() hoạt động giống hệt toán tử stop_gradient trong JAX) ---
+        loss_1 = self.regression_loss(q_online_1, z_target_2.detach()) 
+        loss_2 = self.regression_loss(q_online_2, z_target_1.detach()) 
+        
+        total_loss = (loss_1 + loss_2) / 2.0
+        
+        return {"loss": total_loss}
