@@ -23,6 +23,11 @@ conda activate eegpt
 # ======================
 nvidia-smi
 
+
+echo "=========================================================="
+echo "Train với best pretrained checkpoint"
+echo "=========================================================="
+
 # Launch the training
 for i in {0..3}
 do
@@ -32,6 +37,27 @@ do
         --config-name example_config_downstream \
         dataset=physiomi/v1 \
         dataset.cv_fold_index=$i \
-        model.pretrained_ckpt=\"/home/infres/ttran-25/eegfm/outputs_pretrain/eegpt/L_822/853898/2026-06-17/10-21-53/checkpoints/best-epoch=26-valid/average_valid_loss=1.9843.ckpt\" \
+        model.pretrained_ckpt=\"/home/infres/ttran-25/eegfm/outputs_pretrain/eegpt/L_822/864836/2026-06-26/15-17-21/checkpoints/best-epoch=19-valid/average_valid_loss=1.9513.ckpt\" \
         optimizer.encoder_lr=0
 done
+
+# NOTE ADD LAST CKPT FOR EVERY APPROACH
+
+echo "=========================================================="
+echo "Train với last pretrained checkpoint"
+echo "=========================================================="
+
+# Launch the training
+for i in {0..3}
+do
+    FOLD=$(printf "%02d" $i)
+
+    srun python -m src.train \
+        --config-name example_config_downstream \
+        dataset=physiomi/v1 \
+        dataset.cv_fold_index=$i \
+        model.pretrained_ckpt=\"/home/infres/ttran-25/eegfm/outputs_pretrain/eegpt/L_822/864836/2026-06-26/15-17-21/checkpoints/last.ckpt\" \
+        optimizer.encoder_lr=0
+done
+
+# model.pretrained_ckpt=\"/home/infres/ttran-25/eegfm/outputs_pretrain/eegpt/L_822/853898/2026-06-17/10-21-53/checkpoints/best-epoch=26-valid/average_valid_loss=1.9843.ckpt\" \

@@ -38,6 +38,15 @@ class BaseWeightMethod(ABC, nn.Module):
             weighted_loss: Scalar tensor
         """
         pass
+
+    def on_fit_start(
+        self,
+        losses: Dict[str, torch.Tensor],
+        model: nn.Module,
+        **kwargs
+    ) -> None:
+        """Hook được gọi trước khi backward pass."""
+        pass
     
     def on_before_backward(
         self,
@@ -83,10 +92,6 @@ class BaseWeightMethod(ABC, nn.Module):
         """
         return []
     
-    # def get_logging_dict(self) -> Dict[str, float]:
-    #     """Trả về metrics để log."""
-    #     return {}
-    
     def get_monitoring_metrics(
         self,
         losses: Dict[str, torch.Tensor]
@@ -96,6 +101,18 @@ class BaseWeightMethod(ABC, nn.Module):
         Không ảnh hưởng optimization.
         """
         return {}
+    
+    def checkpoint_state(self):
+        """
+        State cần lưu khi save checkpoint.
+        """
+        return {}
+
+    def restore_checkpoint(self, state):
+        """
+        Restore state sau khi load checkpoint.
+        """
+        pass
 
 # ========================================================================================
 # Linear Scalar Weighting
@@ -152,7 +169,7 @@ class LinearScalarWeighting(BaseWeightMethod):
 # FAMO Weighting
 # ========================================================================================
 
-class FAMOWeighting(BaseWeightMethod):
+class EcoFAMOWeighting(BaseWeightMethod):
     """
     FAMO weight method với update TRƯỚC backward pass.
     
@@ -258,6 +275,14 @@ class FAMOWeighting(BaseWeightMethod):
                 # Update w parameters
                 self.w_opt.zero_grad()
                 self.w.grad = d
+                print("===== BEFORE w_opt.step() =====")
+                print("w device:", self.w.device)
+                print("grad device:", self.w.grad.device)
+
+                for state in self.w_opt.state.values():
+                    for k, v in state.items():
+                        if isinstance(v, torch.Tensor):
+                            print(f"{k}: {v.device}")
                 self.w_opt.step()
         
         # Lưu losses hiện tại làm prev_losses cho step sau
@@ -340,164 +365,227 @@ class FAMOWeighting(BaseWeightMethod):
 # FAMO Original version
 # ========================================================================================
 
-# src/mtl/mtl.py  (thêm vào sau FAMOWeighting)
+import torch
+import torch.nn as nn
+from typing import Any, Dict, List, Optional
 
-class ExactFAMOWeighting(BaseWeightMethod):
+class FAMOWeighting(BaseWeightMethod):
     """
-    FAMO theo Algorithm 1/2 gốc của paper.
-
-    Khác với FAMOWeighting (cross-batch):
-      - L_{t+1} được tính bằng cách re-forward trên CÙNG batch sau optimizer.step()
-      - δ = log L_t − log L_{t+1} là exact signal, không có batch-noise
-      - Cần truyền `shared_step_fn` để có thể gọi lại forward pass
-
-    Chi phí thêm: 1 forward pass (no_grad) mỗi step.
+    Exact FAMO (Algorithm 1/2) với tính năng theo dõi Loss t và Loss t+1.
     """
-
     def __init__(
         self,
         n_tasks: int,
         device: torch.device,
         task_names: List[str],
-        shared_step_fn,            # callable: batch -> Dict[str, Tensor]
+        forward_losses_fn,
         gamma: float = 1e-3,
         w_lr: float = 0.025,
         min_losses: Optional[torch.Tensor] = None,
     ):
         super().__init__(n_tasks, device)
-        self.task_names  = task_names
-        self.shared_step_fn = shared_step_fn   # hàm tính losses, no side-effects
+        self.task_names = task_names
+        self.forward_losses_fn = forward_losses_fn
         self.gamma = gamma
-        self.w_lr  = w_lr
-
+        self.w_lr = w_lr
+        
         self.w = nn.Parameter(torch.zeros(n_tasks), requires_grad=True)
-        self.w_opt = torch.optim.Adam([self.w], lr=w_lr, weight_decay=gamma)
-
-        # State cần giữ qua các hooks trong cùng một step
-        self._current_batch    = None   # batch hiện tại, set ở on_before_backward
-        self._current_loss_t   = None   # L_t (detached tensor), set ở on_before_backward
-        self.current_weights   = None   # z = softmax(w), để log
-        self.last_weighted_loss = 0.0
-
+        self.w_opt = torch.optim.Adam(
+            [self.w],
+            lr=w_lr,
+            weight_decay=gamma,
+        )
+        
         if min_losses is None:
             self.register_buffer("min_losses", torch.zeros(n_tasks))
         else:
             self.register_buffer("min_losses", min_losses)
+            
+        # ==========================
+        # runtime state
+        # ==========================
+        self._current_ctx = None
+        self._current_loss_t = None
+        
+        self._last_loss_t = None      # Loss của từng task tại thời điểm t (trước update)
+        self._last_loss_t1 = None     # Loss của từng task tại thời điểm t+1 (sau update)
+        
+        self.current_weights = None
+        self.last_weighted_loss = 0.
+        
+        print(f"[FAMO] Initialized (w_lr={w_lr}, gamma={gamma})")
 
-        print(f"[ExactFAMO] Initialized — w_lr={w_lr}, gamma={gamma}")
-
-    # ------------------------------------------------------------------
-    # Hook 1: gọi TRƯỚC backward — lưu batch & L_t
-    # ------------------------------------------------------------------
+    # =====================================================
+    # Before backward
+    # =====================================================
     def on_before_backward(
         self,
-        losses: Dict[str, torch.Tensor],
-        model: nn.Module,
-        batch=None,
+        losses,
+        model,
+        forward_context,
         **kwargs,
-    ) -> None:
-        # Lưu lại batch để dùng trong on_before_optimizer_step
-        self._current_batch = batch
+    ):
+        self._current_ctx = forward_context
+        # Lưu lại loss tại thời điểm t để tính delta toán học
+        self._current_loss_t = torch.stack(
+            [losses[name].detach() for name in self.task_names]
+        )
+        # Đồng thời clone sang biến chuyên tracking để tránh bị xóa ở cuối batch
+        self._last_loss_t = self._current_loss_t.clone()
 
-        # Lưu L_t (detached)
-        self._current_loss_t = torch.stack([
-            losses[name].detach() for name in self.task_names
-        ])
-
-
-    # ------------------------------------------------------------------
-    # Hook 3: gọi SAU optimizer.step() — re-forward để lấy L_{t+1},
-    #         rồi update ξ
-    # ------------------------------------------------------------------
-
-
+    # =====================================================
+    # After optimizer.step()
+    # =====================================================
     def on_train_batch_end(
         self,
-        losses: Dict[str, torch.Tensor],
-        model: nn.Module,
+        losses,
+        model,
         **kwargs,
-    ) -> None:
-    
-        if self._current_batch is None or self._current_loss_t is None:
+    ):
+        if self._current_ctx is None or self._current_loss_t is None:
+            print("[DEBUG] ctx and loss are not initialized")
             return
-
-        # --- Re-forward với θ_{t+1}, không cần grad ---
-        model.eval()
+            
+        ####################################################
+        # Exact re-forward
         with torch.no_grad():
-            loss_dict_next = self.shared_step_fn(self._current_batch)
-        model.train()
-
-        loss_t1 = torch.stack([
-            loss_dict_next[name].detach() for name in self.task_names
-        ])
-
-        # --- Tính δ = log(L_t - min + ε) − log(L_{t+1} - min + ε) ---
-        delta = (
-            (self._current_loss_t - self.min_losses + 1e-8).log() -
-            (loss_t1            - self.min_losses + 1e-8).log()
+            loss_dict_next = self.forward_losses_fn(self._current_ctx)
+            
+        loss_t1 = torch.stack(
+            [loss_dict_next[name].detach() for name in self.task_names]
         )
-
-        # --- Gradient của softmax(w) theo w, nhân với δ ---
+        # Lưu lại loss tại thời điểm t+1 để tracking
+        self._last_loss_t1 = loss_t1.clone()
+        
+        ####################################################
+        # delta
+        eps = 1e-8
+        delta = (
+            (self._current_loss_t - self.min_losses + eps).log()
+            -
+            (loss_t1 - self.min_losses + eps).log()
+        )
+        print("Loss_t:", self._current_loss_t)
+        print("Loss_t+1:", loss_t1)
+        print("delta:", delta)
+        
+        ####################################################
+        # update ξ
         with torch.enable_grad():
-            d = torch.autograd.grad(
-                torch.softmax(self.w, dim=-1),
+            softmax_w = torch.softmax(self.w, dim=-1)
+            grad = torch.autograd.grad(
+                softmax_w,
                 self.w,
                 grad_outputs=delta.detach(),
             )[0]
-
+            
         self.w_opt.zero_grad()
-        self.w.grad = d
+        self.w.grad = grad
         self.w_opt.step()
 
-        # Cleanup
-        self._current_batch  = None
+        print("w before:", self.w)
+        print("grad:", grad)
+        
+        ####################################################
+        # cleanup (Chỉ xóa context, giữ lại các biến _last_loss_ để log)
+        ####################################################
+        self._current_ctx = None
         self._current_loss_t = None
 
-    # ------------------------------------------------------------------
-    # Weighted loss (giống FAMOWeighting)
-    # ------------------------------------------------------------------
+    # =====================================================
+    # weighted loss
+    # =====================================================
     def compute_weighted_loss(
         self,
-        losses: Dict[str, torch.Tensor],
-        model: nn.Module,
+        losses,
+        model,
         **kwargs,
     ):
         loss_tensor = torch.stack([losses[name] for name in self.task_names])
-
         z = torch.softmax(self.w, dim=-1)
         D = loss_tensor - self.min_losses + 1e-8
         c = (z / D).sum().detach()
-
-        weighted_losses = {
-            name: D[i].log() * z[i] / c
-            for i, name in enumerate(self.task_names)
-        }
+        
+        weighted_losses = {}
+        for i, name in enumerate(self.task_names):
+            weighted_losses[name] = D[i].log() * z[i] / c
+            
         weighted_loss = torch.stack(list(weighted_losses.values())).sum()
-
+        
+        self.current_weights = z.detach()
         self.last_weighted_loss = weighted_loss.detach().item()
-        self.current_weights    = z.detach()
-
         return weighted_loss, weighted_losses
 
-    def get_optimizer_parameters(self) -> List[Dict[str, Any]]:
+    # =====================================================
+    def get_optimizer_parameters(self):
         return []
 
-    def get_monitoring_metrics(
-        self,
-        losses: Dict[str, torch.Tensor],
-    ) -> Dict[str, torch.Tensor]:
-        loss_tensor = torch.stack(
-            [losses[name].detach() for name in self.task_names]
-        )
+    # =====================================================
+    # Monitoring Metrics
+    def get_monitoring_metrics(self, losses):
+        # 1. Các metrics cơ bản có sẵn của bạn
+        loss_tensor = torch.stack([losses[name].detach() for name in self.task_names])
         metrics = {
-            "average_loss":   loss_tensor.mean().item(),
-            "log_loss":       self.last_weighted_loss,
+            "average_loss": loss_tensor.mean().item(),
+            "log_loss": self.last_weighted_loss,
         }
+        
         if self.current_weights is not None:
             for i, name in enumerate(self.task_names):
                 metrics[f"famo_weight/{name}"] = self.current_weights[i].item()
-        return metrics
 
+        # PRINT RA CONSOLE 
+        print("\n" + "="*50)
+        print(f"[FAMO MONITORING] - Avg Loss: {metrics['average_loss']:.4f} | Log Loss: {metrics['log_loss']:.4f}")
+        print("-"*50)
+        
+        for name in self.task_names:
+            w_val = metrics.get(f"famo_weight/{name}", 0.0)
+            # Ký hiệu mũi tên xanh/đỏ hoặc hướng tăng giảm loss để dễ nhìn bằng mắt
+            print(f" > Task [{name}]:")
+            print(f"   • Weight       : {w_val:.6f}")
+        print("="*50 + "\n")
+
+        return metrics
+    
+    # ========================================================
+    def on_fit_start(
+        self,
+        losses: Dict[str, torch.Tensor],
+        model: nn.Module,
+        **kwargs
+    ):
+        """
+        Move all optimizer internal states (exp_avg, exp_avg_sq, ...)
+        to the same device as self.w.
+        """
+        device = self.w.device
+
+        for state in self.w_opt.state.values():
+            for k, v in state.items():
+                if isinstance(v, torch.Tensor):
+                    state[k] = v.to(device)
+
+        print(f"[FAMO] Optimizer state moved to {device}")
+
+    def checkpoint_state(self):
+        return {
+            "w": self.w.data,
+            "w_opt": self.w_opt.state_dict(),
+            "last_loss_t": self._last_loss_t,
+            "last_loss_t1": self._last_loss_t1,
+            "current_weights": self.current_weights,
+        }
+
+    def restore_checkpoint(self, state):
+        self.w.data.copy_(state["w"])
+        self.w_opt.load_state_dict(state["w_opt"])
+        
+        # 3. Khôi phục các biến tracking khác
+        self._last_loss_t = state["last_loss_t"]
+        self._last_loss_t1 = state["last_loss_t1"]
+        self.current_weights = state["current_weights"]
+    
 # ========================================================================================
 # OGR Weighting
 # ========================================================================================
@@ -699,3 +787,90 @@ class WeightMethodManager(nn.Module):
         losses: Dict[str, torch.Tensor]
     ) -> Dict[str, torch.Tensor]:
         return self.weight_method.get_monitoring_metrics(losses)
+    
+    def checkpoint_state(self):
+        return self.weight_method.checkpoint_state()
+
+    def restore_checkpoint(self, state):
+        self.weight_method.restore_checkpoint(state)
+    
+
+# =====================================================================
+# BẠN CÓ THỂ CHÈN ĐOẠN KHỐI MAIN NÀY VÀO CUỐI FILE MTL CỦA BẠN
+# =====================================================================
+if __name__ == "__main__":
+    print("--- KHỞI CHẠY UNIT TEST FOR FAMO WEIGHTING ---")
+    import torch
+    import torch.nn as nn
+
+    # ==========================
+    # Disable CUDA completely
+    # ==========================
+    torch.cuda.is_available = lambda: False
+    torch.cuda.is_current_stream_capturing = lambda: False
+    
+    # 1. Cấu hình ban đầu
+    device = torch.device('cpu')
+    task_names = ["task_1", "task_2"]
+    n_tasks = len(task_names)
+    
+    # Định nghĩa giá trị Loss_t và Loss_t+1 theo đề bài của bạn
+    # (Tự động chuyển về 'cpu' nếu máy bạn đang test không có GPU CUDA)
+    loss_t_values = torch.tensor([0.8564, 2.3708], device=device)
+    loss_t1_values = torch.tensor([0.8551, 2.3472], device=device)
+    
+    # Chuyển đổi thành dictionary giống định dạng đầu ra của mô hình MTL thông thường
+    losses_t_dict = {
+        "task_1": loss_t_values[0],
+        "task_2": loss_t_values[1]
+    }
+    
+    losses_t1_dict = {
+        "task_1": loss_t1_values[0],
+        "task_2": loss_t1_values[1]
+    }
+    
+    # 2. Giả lập hàm forward_losses_fn
+    # Hàm này sẽ được gọi bên trong on_train_batch_end và trả về Loss tại thời điểm t+1
+    def dummy_forward_losses_fn(context):
+        print("[MOCK] forward_losses_fn được gọi để lấy Loss_t+1")
+        return losses_t1_dict
+
+    # 3. Khởi tạo class FAMOWeighting
+    famo = FAMOWeighting(
+        n_tasks=n_tasks,
+        device=device,
+        task_names=task_names,
+        forward_losses_fn=dummy_forward_losses_fn,
+        w_lr=0.025,
+        gamma=1e-3
+    )
+    
+    # Giả lập model rỗng và context rỗng phục vụ test
+    dummy_model = nn.Linear(10, 2).to(device)
+    dummy_context = {"batch_idx": 42} 
+
+    print("\n--- BƯỚC 1: Gọi on_before_backward (Nạp Loss_t) ---")
+    famo.on_before_backward(
+        losses=losses_t_dict,
+        model=dummy_model,
+        forward_context=dummy_context
+    )
+    print("Đã lưu _current_loss_t:", famo._current_loss_t)
+
+    print("\n--- BƯỚC 2: Gọi on_train_batch_end (Tính toán Delta & Update Weight) ---")
+    # In ra giá trị w trước khi update để đối chiếu
+    print("w ban đầu:", famo.w.data)
+    
+    # Gọi hàm test chính
+    famo.on_train_batch_end(
+        losses=losses_t_dict, # Lưu ý: hàm thực tế lấy data mới từ forward_losses_fn(ctx)
+        model=dummy_model
+    )
+    
+    print("\n--- BƯỚC 3: Kiểm tra tracking sau khi kết thúc batch ---")
+    print("Loss_t đã được lưu lại ở biến tracking:", famo._last_loss_t)
+    print("Loss_t+1 đã được lưu lại ở biến tracking:", famo._last_loss_t1)
+    print("w sau khi update:", famo.w.data)
+    
+    print("\n--- HOÀN THÀNH TEST ---")

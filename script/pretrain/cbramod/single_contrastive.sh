@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --job-name=pretrain_eegpt_contrastive_decoupled_true
+#SBATCH --job-name=pretrain_cbramod_contrastive
 #SBATCH --output=bash_logs/%x_%j.out
 #SBATCH --error=bash_logs/%x_%j.err
 #SBATCH --partition=A100
@@ -20,9 +20,8 @@ conda activate eegpt
 nvidia-smi
 
 srun python -m src.pretrain \
-    --config-name example_config_pretrain_famo_eegpt_cons_reg \
+    --config-name example_config_pretrain_famo_cbramod_cons_reg \
     data.batch_size=128 \
     weight_method=linear \
     tasks.reconstruction.enabled=false \
-    tasks.byol.enabled=true \
-    +tasks.byol.decoupled=true \
+    tasks.byol_reg.enabled=true \

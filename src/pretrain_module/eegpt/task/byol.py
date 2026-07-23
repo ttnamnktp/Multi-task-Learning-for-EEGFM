@@ -3,6 +3,7 @@ import math
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from typing import Any, Dict
 
 from src.pretrain_module.eegpt.utils import augmentation, make_masks
 
@@ -74,26 +75,25 @@ class OriginalBYOLTask(nn.Module):
     def on_train_batch_end(self, **kwargs):
         self.update_target_network()
 
-    def forward(self, shared_output, x, x_aug, mask_x=None, mask_y=None):
+    def forward(self, shared_output, ctx):
         """
         shared_output: Đầu ra online nhận x_aug kèm mask_x (View 1)
         """
+        x_aug = ctx.shared.x_aug
+        mask_x = ctx.shared.mask_x
+        chan_ids = ctx.shared.chan_ids
+
         # --- VIEW 1 ---
         h_online_1 = self._pool_representation(shared_output) 
         z_online_1 = self.online_projector(h_online_1)
         q_online_1 = self.online_predictor(z_online_1)
         
         # --- VIEW 2 ---
-        x_aug_2 = augmentation(x) 
-        
-        # Để tránh việc mô hình gian lận thông tin qua mask, ta tạo một mask ngẫu nhiên độc lập cho View 2
-        if mask_x is not None:
-            mask_x_2, _ = make_masks(self.online_encoder.encoder.num_patches, p_n_y=0.4, p_c_y=0.2)
-            mask_x_2 = mask_x_2.to(x_aug_2.device)
-        else:
-            mask_x_2 = None
+        # ===== TASK CONTEXT =====
+        task_ctx = ctx.tasks["byol_original"]
+        x_aug_2 = task_ctx["x_aug_2"]
+        mask_x_2 = task_ctx["mask_x_2"]
             
-        chan_ids = self.online_encoder.chans_id.to(x_aug_2)
         shared_output_2 = self.online_encoder(x=x_aug_2, chan_ids=chan_ids, mask_x=mask_x_2)
         
         h_online_2 = self._pool_representation(shared_output_2)
@@ -119,3 +119,26 @@ class OriginalBYOLTask(nn.Module):
         total_loss = (loss_1 + loss_2) / 2.0
         
         return {"loss": total_loss}
+    
+    def build_task_context(
+        self,
+        batch,
+        shared_ctx,
+        module=None,
+    ) -> Dict[str, Any]:
+
+        x, _ = batch
+        x_aug_2 = augmentation(x)
+        if shared_ctx.mask_x is None:
+            mask_x_2 = None
+        else:
+            mask_x_2, _ = make_masks(
+                module.model.encoder.num_patches,
+                p_n_y=0.4,
+                p_c_y=0.2
+            )
+
+        return {
+            "x_aug_2": x_aug_2,
+            "mask_x_2": mask_x_2,
+        }

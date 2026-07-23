@@ -224,18 +224,6 @@ class ContrastiveBYOLTask(BaseTask):
             "loss": loss,
             "loss_koleo": loss_koleo,
         }
-        # loss= id_loss(
-        #     z1=h_online,
-        #     z2=h_target.detach(),
-        #     id=id_tensor,
-        #     temperature=self.temperature,
-        #     koleo_weight=self.koleo_weight,
-        # )
-
-        # return {
-        #     "loss": loss,
-        # }
-
 
 # ============================================
 # Loss functions 

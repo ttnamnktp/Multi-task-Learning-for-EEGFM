@@ -29,6 +29,7 @@ class BaseModule(L.LightningModule, ABC):
         self.weight_method_manager = None
 
         self._current_losses = None
+        self._current_forward_context = None
         self._train_losses_accum: Dict[str, List[float]] = {}
         self._val_losses_accum:   Dict[str, List[float]] = {}
         self._last_train_epoch_losses: Dict[str, float] = {} # thêm
@@ -61,16 +62,20 @@ class BaseModule(L.LightningModule, ABC):
         pass
     
     @abstractmethod
-    def shared_step(self, batch) -> Dict[str, torch.Tensor]:
+    def shared_step(self, ctx) -> Dict[str, torch.Tensor]:
         """
         Compute all task losses for a batch.
         
         Args:
-            batch: Input batch
+            ctx: Input batch + randomness
             
         Returns:
             Dict[str, torch.Tensor]: Dictionary mapping task names to loss values
         """
+        pass
+
+    @abstractmethod
+    def build_forward_context(self, batch):
         pass
     
     def _build_weight_method(self, cfg) -> WeightMethodManager:
@@ -102,13 +107,23 @@ class BaseModule(L.LightningModule, ABC):
                 device=self.device,
                 task_weights=filtered_weights
             )
+        # elif method_name == "famo":
+        #     params = cfg.get("weight_method", {})
+        #     weight_method = FAMOWeighting(
+        #         n_tasks=n_tasks,
+        #         device=self.device,
+        #         task_names=task_names,
+        #         gamma=params.get("gamma", 1e-3),
+        #         w_lr=params.get("w_lr", 0.025),
+        #     )
         elif method_name == "famo":
             params = cfg.get("weight_method", {})
             weight_method = FAMOWeighting(
                 n_tasks=n_tasks,
                 device=self.device,
                 task_names=task_names,
-                gamma=params.get("gamma", 1e-5),
+                forward_losses_fn=self.forward_losses_no_grad,
+                gamma=params.get("gamma", 1e-3),
                 w_lr=params.get("w_lr", 0.025),
             )
         elif method_name == "ogr":
@@ -158,11 +173,19 @@ class BaseModule(L.LightningModule, ABC):
         """Called at the beginning of fit."""
         if self.weight_method_manager is not None:
             self.weight_method_manager.to(self.device)
+            self.weight_method_manager.trigger_lifecycle_hooks(
+                "on_fit_start",
+                losses=None,
+                model=None
+            )
+    
     
     def training_step(self, batch, batch_idx):
         """Standard training step with MTL support."""
         # Step 1: Compute task losses
-        loss_dict = self.shared_step(batch)
+        ctx = self.build_forward_context(batch)
+        loss_dict = self.shared_step(ctx)
+        self._current_forward_context = ctx
         self._current_losses = loss_dict
         
         # Step 2: Pre-backward hook (FAMO updates weights here)
@@ -170,7 +193,7 @@ class BaseModule(L.LightningModule, ABC):
             "on_before_backward",
             losses=loss_dict,
             model=self.model,
-            batch=batch
+            forward_context=self._current_forward_context
         )
         
         # Step 3: Compute loss
@@ -208,7 +231,8 @@ class BaseModule(L.LightningModule, ABC):
     
     def validation_step(self, batch, batch_idx):
         """Standard validation step."""
-        loss_dict = self.shared_step(batch)
+        ctx = self.build_forward_context(batch)
+        loss_dict = self.shared_step(ctx)
 
         for task_name, loss in loss_dict.items():
             self.log(
@@ -257,7 +281,6 @@ class BaseModule(L.LightningModule, ABC):
 
     def on_train_batch_end(self, outputs, batch, batch_idx):
         """Lightning hook - called after training_step."""
-        self._current_losses = None
 
         for task_name, task in self.tasks.items():
             if hasattr(task, 'on_train_batch_end'):
@@ -266,6 +289,16 @@ class BaseModule(L.LightningModule, ABC):
                     batch=batch,
                     batch_idx=batch_idx
                 )
+
+        self.weight_method_manager.trigger_lifecycle_hooks(
+                "on_train_batch_end",
+                losses=self._current_losses,
+                model=self.model,
+                tasks=self.tasks
+            )
+        
+        self._current_losses = None
+        self._current_forward_context = None
 
     def on_train_epoch_end(self):
         """Compute epoch-level training loss dynamics."""
@@ -307,7 +340,20 @@ class BaseModule(L.LightningModule, ABC):
         )
 
         self._val_losses_accum.clear()
-        
+    
+    def on_save_checkpoint(self, checkpoint):
+
+        checkpoint["weight_method"] = (
+            self.weight_method_manager.checkpoint_state()
+        )
+
+    def on_load_checkpoint(self, checkpoint):
+
+        state = checkpoint.get("weight_method", None)
+
+        if state is not None:
+            self.weight_method_manager.restore_checkpoint(state)
+            
     # ==========================================
     # Optimizer Configuration
     # ==========================================
@@ -368,6 +414,28 @@ class BaseModule(L.LightningModule, ABC):
     # ==========================================
     # Helper Methods
     # ==========================================
+    def forward_losses_no_grad(self, ctx):
+        print("\n[DEBUG] === forward_losses_no_grad CALLED ===")
+        print("[DEBUG] model.training BEFORE:", self.training)
+
+        was_training = self.training
+
+        self.eval()
+
+        with torch.inference_mode():
+            loss_dict = self.shared_step(ctx)
+
+        print("[DEBUG] loss_dict keys:", loss_dict.keys())
+        for k, v in loss_dict.items():
+            print(f"[DEBUG] {k}: {v.item():.6f}")
+
+        if was_training:
+            self.train()
+
+        print("[DEBUG] model.training AFTER:", self.training)
+        print("[DEBUG] === END forward_losses_no_grad ===\n")
+
+        return loss_dict
     
     def _log_training_metrics(
         self,

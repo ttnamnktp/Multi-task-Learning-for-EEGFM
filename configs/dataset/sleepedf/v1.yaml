@@ -1,0 +1,18 @@
+# configs/dataset/physiomi.yaml
+name: sleepedf
+data_dir: /projects/EEG-foundation-model/tran-24/data_200Hz_processed/sleep_edf_bipolar_no_CAR
+seed: 7
+n_folds: 5
+fold: 0      # thay đổi cái này cho mỗi CV round
+split_mode: subject_kfold
+scale_div: 200.0
+val_ratio: 0.2
+stratified_val: True
+
+num_classes: 5
+num_channels: 2
+use_chans_num : 19
+time_points : 6000
+patch_size: 200
+num_patch: 30
+use_channels_names: ["FP1","FP2","F7","F3","FZ","F4","F8","T3","C3","CZ","C4","T4","T5","P3","PZ","P4","T6","O1","O2"]

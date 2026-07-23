@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --job-name=pretrain_eegpt_ogr_0.02
+#SBATCH --job-name=pretrain_eegpt_famo_w_lr_0.025_gamma_1e-5
 #SBATCH --output=bash_logs/%x_%j.out
 #SBATCH --error=bash_logs/%x_%j.err
 #SBATCH --partition=A100
@@ -22,4 +22,4 @@ nvidia-smi
 srun python -m src.pretrain \
     --config-name example_config_pretrain_famo_eegpt_cons_reg \
     data.batch_size=128 \
-    weight_method=ogr \
+    weight_method=famo \

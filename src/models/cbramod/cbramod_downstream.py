@@ -18,7 +18,7 @@ class CBraModDownstream(BaseModel):
         self.time_points = cfg.dataset.time_points
 
         self.patch_size = cfg.model.patch_size
-        self.seq_len = cfg.model.seq_len
+        self.seq_len = cfg.dataset.time_points // cfg.model.d_model
 
         # --------------------------------------------------
         # Encoder
@@ -28,7 +28,7 @@ class CBraModDownstream(BaseModel):
             out_dim=cfg.model.out_dim,
             d_model=cfg.model.d_model,
             dim_feedforward=cfg.model.dim_feedforward,
-            seq_len=cfg.model.seq_len,
+            seq_len=self.seq_len,
             n_layer=cfg.model.n_layer,
             nhead=cfg.model.nhead,
         )
@@ -289,7 +289,7 @@ def main():
 
         class model:
             patch_size = 200
-            seq_len = 5 #16
+            # seq_len = 16 #16
             in_dim = 200
             out_dim = 200
             d_model = 200
@@ -318,7 +318,7 @@ def main():
     # --------------------------------------------------
     B = 2
     C = cfg.dataset.num_channels
-    T = cfg.model.patch_size * cfg.model.seq_len  # 200 * 16 = 3200
+    T = cfg.dataset.time_points  # 200 * 16 = 3200
 
     x = torch.randn(B, C, T)
 

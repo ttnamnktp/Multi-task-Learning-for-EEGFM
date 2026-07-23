@@ -7,33 +7,33 @@ from src.data.data import EEGDataModule
 
 def main():
     cfg = OmegaConf.create({
-        "dataset": {
-            "name": "physiomi",
-            "data_dir": "/projects/EEG-foundation-model/tran-24/data_200Hz_processed/physiomi_no_car",  # <-- đổi lại
-            "seed": 7,
-            "test_fold_index": 4,
-            "cv_fold_index": 0,
-            "folds_json": None,
-            "scale_div": 1000.0,
-        },
+        # "dataset": {
+        #     "name": "physiomi",
+        #     "data_dir": "/projects/EEG-foundation-model/tran-24/data_200Hz_processed/physiomi_no_car",  # <-- đổi lại
+        #     "seed": 7,
+        #     "test_fold_index": 4,
+        #     "cv_fold_index": 0,
+        #     "folds_json": None,
+        #     "scale_div": 1000.0,
+        # },
         # "dataset": {
         #     "name": "kaggle_ern",
         #     "data_dir": "/projects/EEG-foundation-model/tran-24/data_200Hz_processed/KaggleERN_200hz_no_CAR",  # <-- đổi lại
         #     "seed": 7,
-        #     "fold": 1,
+        #     "fold": 5,
         #     "scale_div": 1000.0,
         # },
-        # "dataset": {
-        #     "name": "sleepedf",
-        #     "data_dir": "/projects/EEG-foundation-model/tran-24/data_200Hz_processed/sleep_edf_bipolar_no_CAR",  # <-- đổi lại
-        #     "seed": 7,
-        #     "fold": 1,
-        #     "split_mode": "mixed",
-        #     "test_subject_ids": [0, 1],
-        #     "val_ratio": 0.1,
-        #     "stratified_val": True,
-        #     "scale_div": 1000.0,
-        # },
+        "dataset": {
+            "name": "sleepedf",
+            "data_dir": "/projects/EEG-foundation-model/tran-24/data_200Hz_processed/sleep_edf_bipolar_no_CAR",  # <-- đổi lại
+            "seed": 7,
+            "n_folds": 5,
+            "fold": 0,
+            "split_mode": "subject_kfold",
+            "val_ratio": 0.2,
+            "stratified_val": True,
+            "scale_div": 200.0,
+        },
         # "dataset": {
         #     "name": "tuab",
         #     "data_dir": "/projects/EEG-foundation-model/tran-24/data_200Hz_processed/tuab_no_car",  # <-- đổi lại

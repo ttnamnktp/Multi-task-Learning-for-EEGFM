@@ -8,7 +8,6 @@ import shutil
 from pathlib import Path
 
 from src.module.registry import get_module
-import src.module
 from src.data.data import EEGDataModule
 from src.utils.callbacks import build_callbacks
 

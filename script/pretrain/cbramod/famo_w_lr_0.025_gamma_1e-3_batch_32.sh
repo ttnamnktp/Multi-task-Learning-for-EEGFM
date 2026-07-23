@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --job-name=pretrain_eegpt_byol
+#SBATCH --job-name=pretrain_cbramod_famo_w_lr_0.025_gamma_1e-3_batch_32
 #SBATCH --output=bash_logs/%x_%j.out
 #SBATCH --error=bash_logs/%x_%j.err
 #SBATCH --partition=A100
@@ -20,9 +20,8 @@ conda activate eegpt
 nvidia-smi
 
 srun python -m src.pretrain \
-    --config-name example_config_pretrain_famo_eegpt_cons_reg \
-    data.batch_size=128 \
-    weight_method=linear \
-    tasks.reconstruction.enabled=false \
-    tasks.byol.enabled=false \
-    tasks.byol_original.enabled=true \
+    --config-name example_config_pretrain_famo_cbramod_cons_reg \
+    data.batch_size=32 \
+    weight_method=famo \
+    weight_method.w_lr=0.025 \
+    weight_method.gamma=1e-3 \

@@ -6,6 +6,7 @@ import copy
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from typing import Any, Dict
 
 from .base_task import BaseTask
 from src.pretrain_module.cbramod.utils import augmentation, make_mask
@@ -174,12 +175,12 @@ class BYOLRegTask(BaseTask):
     # FORWARD (Chuẩn hóa theo flow code gốc)
     # ============================================
 
-    def forward(self, shared_output, batch, mask):
+    def forward(self, shared_output, ctx):
         """
         shared_output: out_enc của nhánh Online nhận x_aug [B, C, N, D]
         batch[0]: Dữ liệu gốc x (chưa qua augmentation)
         """
-        x = batch
+        x = ctx.shared.x
         id_tensor = torch.arange(x.shape[0], device=x.device)
 
         # =====================================
@@ -191,15 +192,16 @@ class BYOLRegTask(BaseTask):
         h_online = self.pool(p_online)    # -> [B, D]
 
         # =====================================
-        # 2. NHÁNH TARGET EMA (Từ x sạch)
+        # 2. NHÁNH TARGET EMA
         # =====================================
         with torch.no_grad():
             # Tạo mask nhẹ cho nhánh EMA giống hệt tỷ lệ code trước (mask / 4)
             # Giả định mask gốc là 0.2 thì ema_mask_ratio là 0.05
-            ema_mask = make_mask(x, 0.1) 
+            task_ctx = ctx.tasks["byol_reg"]
+            ema_mask = task_ctx["ema_mask"]
+            x2 = task_ctx["x2"]
             
-            # Khởi chạy Target Encoder trên dữ liệu gốc x
-            h_target_enc = self.target_encoder(x, mask=ema_mask)
+            h_target_enc = self.target_encoder(x2, mask=ema_mask)
             
             # Xử lý nếu đầu ra của target_encoder trả về dict hoặc tensor thuần
             if isinstance(h_target_enc, dict):
@@ -222,6 +224,20 @@ class BYOLRegTask(BaseTask):
 
         return {
             "loss": loss,
+        }
+    
+    def build_task_context(
+        self,
+        batch,
+        shared_ctx, # SharedForwardContext
+        module=None,
+    ) -> Dict[str, Any]:
+        x2 = augmentation(shared_ctx.x)
+        ema_mask = make_mask(shared_ctx.x, 0.1)
+
+        return {
+            "x2": x2,
+            "ema_mask": ema_mask,
         }
 
 

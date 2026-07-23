@@ -2,7 +2,7 @@ import os
 import re
 import random
 from typing import Dict, List, Optional, Sequence, Tuple
-
+from sklearn.model_selection import KFold
 import numpy as np
 import torch
 from torch.utils.data import Dataset
@@ -95,6 +95,12 @@ def _make_cache_key(cfg) -> tuple:
             tuple(sorted(_to_int_list(getattr(cfg, "val_subject_ids",   None)))),
             tuple(sorted(_to_int_list(getattr(cfg, "test_subject_ids",  None)))),
         )
+    elif split_mode == "subject_kfold":
+        return base + (
+            int(getattr(cfg, "n_folds")),
+            int(getattr(cfg, "fold")),
+            float(getattr(cfg, "val_ratio", 0.1)),
+        )
     else:
         return base + (
             tuple(sorted(_to_int_list(getattr(cfg, "test_subject_ids", None)))),
@@ -136,6 +142,9 @@ def _build_splits(
 
     elif split_mode == "subject_random":
         return _split_subject_random(cfg, files, labels, subj_ids, uniq, seed)
+    
+    elif split_mode == "subject_kfold":
+        return _split_subject_kfold(cfg, files, labels, subj_ids, uniq, seed)
 
     else:
         raise ValueError(f"Unknown split_mode: {split_mode!r}")
@@ -215,6 +224,67 @@ def _split_subject_random(cfg, files, labels, subj_ids, uniq, seed):
         "test":  (te_f, te_y),
     }
 
+def _split_subject_kfold(cfg, files, labels, subj_ids, uniq, seed):
+
+    n_folds = int(getattr(cfg, "n_folds"))
+    fold    = int(getattr(cfg, "fold"))
+    val_ratio = float(getattr(cfg, "val_ratio", 0.1))
+
+    if fold < 0 or fold >= n_folds:
+        raise ValueError(
+            f"fold must be in [0,{n_folds-1}], got {fold}"
+        )
+
+    kf = KFold(
+        n_splits=n_folds,
+        shuffle=False,
+    )
+
+    subjects = sorted(uniq)
+
+    for i, (_, test_idx) in enumerate(kf.split(subjects)):
+        if i == fold:
+            test_subjects = [subjects[j] for j in test_idx]
+            break
+
+    test_files, test_labels = _subset_by_subject(
+        files,
+        labels,
+        subj_ids,
+        test_subjects,
+    )
+
+    remain_subjects = sorted(set(subjects) - set(test_subjects))
+
+    rng = random.Random(seed)
+    rng.shuffle(remain_subjects)
+
+    n_val = max(
+        1,
+        int(round(len(remain_subjects) * val_ratio))
+    )
+
+    val_subjects = remain_subjects[:n_val]
+    train_subjects = remain_subjects[n_val:]
+
+    return {
+        "train": _subset_by_subject(
+            files,
+            labels,
+            subj_ids,
+            train_subjects,
+        ),
+        "val": _subset_by_subject(
+            files,
+            labels,
+            subj_ids,
+            val_subjects,
+        ),
+        "test": (
+            test_files,
+            test_labels,
+        ),
+    }
 
 # -----------------------------------------------
 # File scanning

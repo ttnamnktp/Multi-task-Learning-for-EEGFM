@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --job-name=downstream_bcic2a_eegpt_famo_w_lr_0.025_gamma_1e-3
+#SBATCH --job-name=downstream_bcic2a_eegpt_famo_w_lr_0.025_gamma_1e-3_final_version
 #SBATCH --output=bash_logs/%x_%j.out
 #SBATCH --error=bash_logs/%x_%j.err
 #SBATCH --time=24:00:00          # hh:mm:ss

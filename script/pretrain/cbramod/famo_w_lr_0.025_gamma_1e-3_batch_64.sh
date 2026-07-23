@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --job-name=pretrain_cbramod_famo_w_lr_0.05
+#SBATCH --job-name=pretrain_cbramod_famo_w_lr_0.025_gamma_1e-3_batch_64
 #SBATCH --output=bash_logs/%x_%j.out
 #SBATCH --error=bash_logs/%x_%j.err
 #SBATCH --partition=A100
@@ -21,7 +21,7 @@ nvidia-smi
 
 srun python -m src.pretrain \
     --config-name example_config_pretrain_famo_cbramod_cons_reg \
-    data.batch_size=128 \
+    data.batch_size=64 \
     weight_method=famo \
-    weight_method.w_lr=0.05 \
-    weight_method.gamma=1e-5 \
+    weight_method.w_lr=0.025 \
+    weight_method.gamma=1e-3 \

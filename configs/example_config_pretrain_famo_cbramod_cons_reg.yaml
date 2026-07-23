@@ -46,3 +46,7 @@ grad_monitor:
   enabled: true
   ema_alpha: 0.1
   log_every_n: 4000
+
+resume:
+  enabled: false
+  ckpt_path: null

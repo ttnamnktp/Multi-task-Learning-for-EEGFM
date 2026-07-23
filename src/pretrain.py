@@ -24,14 +24,21 @@ def main(cfg: DictConfig):
 
     # 2. Logger
     logger = TensorBoardLogger(
-        save_dir=hydra_dir, 
-        name="tb_logs", 
+        save_dir=cfg.resume.original_run_dir if cfg.resume.enabled else hydra_dir,
+        name="tb_logs",
+        version=cfg.resume.tb_version if cfg.resume.enabled else None,
     )
     print("Logger dir:", logger.log_dir)
 
     # 3. Callbacks
+    # Định nghĩa thư mục lưu checkpoint động dựa trên việc có resume hay không
+    checkpoint_dir = (
+        os.path.join(cfg.resume.original_run_dir, "checkpoints") 
+        if cfg.resume.enabled 
+        else os.path.join(hydra_dir, "checkpoints")
+    )
     ckpt = ModelCheckpoint(
-        dirpath=os.path.join(hydra_dir, "checkpoints"),
+        dirpath=checkpoint_dir, # Thay hydra_dir bằng checkpoint_dir đã phân nhánh
         monitor="valid/average_valid_loss",   # dùng đúng metric pretrain
         mode="min",
         save_top_k=1,
@@ -58,7 +65,11 @@ def main(cfg: DictConfig):
         num_sanity_val_steps=cfg.trainer.num_sanity_val_steps
     )
 
-    trainer.fit(model, datamodule=datamodule)
+    trainer.fit(
+        model, 
+        datamodule=datamodule,
+        ckpt_path=cfg.resume.ckpt_path if cfg.resume.enabled else None,
+        )
 
 if __name__ == '__main__':
     main()

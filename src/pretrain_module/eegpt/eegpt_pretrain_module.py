@@ -14,6 +14,26 @@ from .task.byol_reg import BYOLRegTask
 from .config_builder import EEGPTConfigBuilder
 from .utils import augmentation, make_masks
 
+# ============================================================================
+# CONTEXT
+# ============================================================================
+
+from dataclasses import dataclass, field
+from typing import Any, Dict, Optional
+
+@dataclass(frozen=True)
+class SharedForwardContext:
+    x: torch.Tensor
+    x_aug: torch.Tensor
+    mask_x: Optional[torch.Tensor]
+    mask_y: Optional[torch.Tensor]
+    chan_ids: torch.Tensor
+    meta: Dict[str, Any] = field(default_factory=dict)
+
+@dataclass(frozen=True)
+class ForwardContext:
+    shared: SharedForwardContext
+    tasks: Dict[str, Dict[str, Any]] = field(default_factory=dict)
 
 @register_module("eegpt_pretrain_module")
 class EEGPretrain(BaseModule):
@@ -43,7 +63,6 @@ class EEGPretrain(BaseModule):
         # Reconstruction task
         if task_configs.get("reconstruction", {}).get("enabled", False):
             tasks["reconstruction"] = ReconstructionTask(
-                online_encoder=self.model,
                 models_configs=self.model_cfg
             )
             print("[INFO] ✓ Reconstruction task enabled")
@@ -131,135 +150,187 @@ class EEGPretrain(BaseModule):
     # ==============================================================
     # Shared step
     # ==============================================================
-    def shared_step(self, batch):
-        x, _ = batch
-        x_aug = augmentation(x)
-
-        mask_x, mask_y = make_masks(
-            self.model.encoder.num_patches, 
-            p_n_y=0.4, 
-            p_c_y=0.2
-        )
+    def shared_step(self, ctx):
+        x_aug = ctx.shared.x_aug
+        mask_x = ctx.shared.mask_x
+        chan_ids = ctx.shared.chan_ids
 
         # Forward pass
-        shared_output = self.model(
-            x=x_aug, 
-            chan_ids=self.model.chans_id.to(x_aug), 
-            mask_x=mask_x
-        )
+        shared_output = self.model(x=x_aug, chan_ids=chan_ids, mask_x=mask_x)
         
         # Compute task losses
         loss_dict = {}
         for task_name, task in self.tasks.items():
-            task_output = task(shared_output=shared_output, x=x, x_aug=x_aug, mask_x=mask_x, mask_y=mask_y)
+            task_output = task(shared_output=shared_output, ctx=ctx) # truyền context cho task
             loss_dict[task_name] = task_output["loss"]
         
         return loss_dict
+    
+    # ==============================================================
+    # BUILD CONTEXT
+    # ==============================================================
+    def build_shared_context(self, batch) -> SharedForwardContext:
+        x, _ = batch
+        x_aug = augmentation(x)
+        mask_x, mask_y = make_masks(
+            self.model.encoder.num_patches,
+            p_n_y=0.4,
+            p_c_y=0.2
+        )
+
+        return SharedForwardContext(
+            x=x,
+            x_aug=x_aug,
+            mask_x=mask_x,
+            mask_y=mask_y,
+            chan_ids=self.model.chans_id.to(x_aug)
+        )
+    
+    def build_forward_context(self, batch) -> ForwardContext:
+        shared_ctx = self.build_shared_context(batch)
+
+        task_ctxs = {}
+        for task_name, task in self.tasks.items():
+            task_ctxs[task_name] = task.build_task_context(
+                batch=batch,
+                shared_ctx=shared_ctx,
+                module=self,
+            )
+
+        return ForwardContext(shared=shared_ctx, tasks=task_ctxs)
 
 # Check forward
+from omegaconf import OmegaConf
 
-# import torch
-# from omegaconf import OmegaConf
+def main():
+    cfg = OmegaConf.create({
+        "model": {
+            "img_size": [19, 3200],
+            "patch_size": 200,
+            "embed_dim": 512,
+            "embed_num": 4,
+            "num_heads": 8,
+            "encoder_depth": 8,
+            "predictor_depth": 2,
+            "reconstructor_depth": 2,
+            "mlp_ratio": 4.0,
+            "qkv_bias": True,
+            "drop_rate": 0.0,
+            "attn_drop_rate": 0.0,
+            "drop_path_rate": 0.0,
+            "init_std": 0.02,
+        },
+        "tasks": {
+            "reconstruction": {"enabled": True},
+            "contrastive": {"enabled": False},
+            "byol": {
+                "enabled": True,
+                "proj_dim": 256,
+                "hidden_dim": 512,
+                "tau": 0.996,
+                "tau_end": 0.999,
+                "temperature": 0.1,
+                "decoupled": False,
+            },
+            "byol_reg": {"enabled": False},
+            "byol_original": {"enabled": False},
+        }
+    })
 
+    device = "cpu"
 
-# def debug_forward_original_byol(module, x):
-#     """
-#     Chạy check forward cho task byol_original.
-#     x: tensor shape [B, 19, 3200]
-#     """
-#     device = next(module.parameters()).device
-#     x = x.to(device)
+    module = EEGPretrain(cfg).to(device)
 
-#     print("=" * 100)
-#     print("[DEBUG] Start Original BYOL forward check")
-#     print(f"[DEBUG] Input x.shape = {x.shape}")
+    print("\n[INFO] Active tasks:", list(module.tasks.keys()))
+    print("[INFO] Model mode:", module.training)
 
-#     if "byol_original" not in module.tasks:
-#         raise ValueError("Task 'byol_original' is not enabled in module.tasks")
+    # =========================
+    # Fake batch
+    # =========================
+    B = 2
+    batch = (
+        torch.randn(B, 19, 3200, device=device),
+        torch.zeros(B, dtype=torch.long, device=device)
+    )
 
-#     byol_task = module.tasks["byol_original"]
+    # =========================
+    # Build context
+    # =========================
+    ctx = module.build_forward_context(batch)
 
-#     # ------------------------------------------------------------
-#     # View 1
-#     # ------------------------------------------------------------
-#     x_aug = augmentation(x)
-#     print(f"[DEBUG] x_aug.shape = {x_aug.shape}")
+    print("\n========== CONTEXT DEBUG ==========")
+    print(f"x        : {ctx.shared.x.shape}")
+    print(f"x_aug    : {ctx.shared.x_aug.shape}")
+    print(f"mask_x   : {ctx.shared.mask_x.shape}")
+    print(f"mask_y   : {ctx.shared.mask_y.shape}")
+    print(f"chan_ids : {ctx.shared.chan_ids.shape}")
 
-#     mask_x, mask_y = make_masks(
-#         module.model.encoder.num_patches,
-#         p_n_y=0.4,
-#         p_c_y=0.2
-#     )
+    # =========================
+    # TASK CONTEXT DEBUG
+    # =========================
+    print("\n========== TASK CONTEXT ==========")
+    for task_name, task_ctx in ctx.tasks.items():
+        print(f"\n👉 Task: {task_name}")
+        for k, v in task_ctx.items():
+            if torch.is_tensor(v):
+                print(f"  {k:15s}: shape={tuple(v.shape)} dtype={v.dtype}")
+            else:
+                print(f"  {k:15s}: {v}")
 
-#     if mask_x is not None:
-#         mask_x = mask_x.to(device)
-#     if mask_y is not None:
-#         mask_y = mask_y.to(device)
+    # =========================
+    # FORWARD TEST
+    # =========================
+    print("\n========== FORWARD TEST ==========")
 
-#     print(f"[DEBUG] mask_x.shape = {None if mask_x is None else mask_x.shape}")
-#     print(f"[DEBUG] mask_y.shape = {None if mask_y is None else mask_y.shape}")
+    module.eval()
 
-#     chan_ids = module.model.chans_id.to(device)
-#     print(f"[DEBUG] chan_ids.shape = {chan_ids.shape}")
+    with torch.no_grad():
 
-#     shared_output = module.model(
-#         x=x_aug,
-#         chan_ids=chan_ids,
-#         mask_x=mask_x
-#     )
+        loss_dict_eval = module.shared_step(ctx)
 
-#     print(f"[DEBUG] shared_output.shape = {shared_output.shape}")
+        print("\n[DEBUG] EVAL MODE LOSSES:")
+        for k, v in loss_dict_eval.items():
+            print(f"  {k:20s}: {v.item():.6f}")
 
-#     # ------------------------------------------------------------
-#     # Kiểm tra shape đúng với giả định của OriginalBYOLTask
-#     # expected: [B, C, P, D] = [B, 19, 16, 512]
-#     # ------------------------------------------------------------
-#     assert shared_output.dim() == 4, \
-#         f"Expected shared_output dim = 4, got shape {shared_output.shape}"
+    # =========================
+    # TRAIN MODE TEST (IMPORTANT)
+    # =========================
+    print("\n========== TRAIN MODE TEST ==========")
 
-#     B, C, P, D = shared_output.shape
-#     print(f"[DEBUG] Parsed shared_output dims:")
-#     print(f"        B = {B}, C = {C}, P = {P}, D = {D}")
+    module.train()
 
-#     # ------------------------------------------------------------
-#     # Xem online branch view 1 trước
-#     # ------------------------------------------------------------
-#     h_online_1 = byol_task._pool_representation(shared_output)
-#     print(f"[DEBUG] h_online_1.shape = {h_online_1.shape}")
+    loss_dict_train = module.shared_step(ctx)
 
-#     z_online_1 = byol_task.online_projector(h_online_1)
-#     print(f"[DEBUG] z_online_1.shape = {z_online_1.shape}")
+    print("\n[DEBUG] TRAIN MODE LOSSES:")
+    for k, v in loss_dict_train.items():
+        print(f"  {k:20s}: {v.item():.6f}")
 
-#     q_online_1 = byol_task.online_predictor(z_online_1)
-#     print(f"[DEBUG] q_online_1.shape = {q_online_1.shape}")
+    # =========================
+    # COMPARE (CRITICAL FOR FAMO)
+    # =========================
+    print("\n========== TRAIN vs EVAL ==========")
 
-#     # ------------------------------------------------------------
-#     # Chạy full BYOL task
-#     # ------------------------------------------------------------
-#     out = byol_task(
-#         shared_output=shared_output,
-#         x=x,
-#         x_aug=x_aug,
-#         mask_x=mask_x,
-#         mask_y=mask_y
-#     )
+    for k in loss_dict_train:
+        print(
+            f"{k:20s} | train={loss_dict_train[k].item():.6f} | eval={loss_dict_eval[k].item():.6f}"
+        )
 
-#     if not isinstance(out, dict) or "loss" not in out:
-#         raise ValueError("OriginalBYOLTask forward must return {'loss': ...}")
+    # =========================
+    # CHECK FOR COLLAPSE
+    # =========================
+    print("\n========== COLLAPSE CHECK ==========")
 
-#     loss = out["loss"]
-#     print(f"[DEBUG] BYOL loss = {loss.item():.6f}")
-#     print("[DEBUG] Forward success.")
-#     print("=" * 100)
+    for k, v in loss_dict_eval.items():
+        if v.item() == 0:
+            print(f"[WARNING] {k} eval loss = 0 ❌ (collapse)")
+        elif abs(v.item() - loss_dict_train[k].item()) < 1e-6:
+            print(f"[OK] {k} stable")
+        else:
+            print(f"[INFO] {k} differs train/eval → stochastic or BN effect")
 
+    print("\n[DEBUG] Forward check finished.")
 
 # def main():
-#     """
-#     Main test để chạy riêng file eegpt_pretrain_module.py
-#     """
-#     # ============================================================
-#     # 1) Config tối thiểu để build EEGPretrain + bật đúng Original BYOL
-#     # ============================================================
 #     cfg = OmegaConf.create({
 #         "model": {
 #             "img_size": [19, 3200],
@@ -277,53 +348,69 @@ class EEGPretrain(BaseModule):
 #             "drop_path_rate": 0.0,
 #             "init_std": 0.02,
 #         },
-
-#         # chỉ bật task này
 #         "tasks": {
-#             "byol_original": {
-#                 "enabled": True,
-#                 "proj_dim": 256,
-#                 "hidden_dim": 4096,
-#                 "tau": 0.996
-#             }
-#         },
-
-#         # nếu BaseModule/setup_training của bạn cần optimizer/lr thì thêm vào
-#         # nếu không cần thì có thể bỏ
-#         "optimizer": {
-#             "lr": 1e-4
+#             "reconstruction": {"enabled": True},
+#             "contrastive":    {"enabled": False},
+#             "byol": {
+#                 "enabled":     False,
+#                 "proj_dim":    256,
+#                 "hidden_dim":  512,
+#                 "tau":         0.996,
+#                 "tau_end":     0.999,
+#                 "temperature": 0.1,
+#                 "decoupled":   False,
+#             },
+#             "byol_reg":      {"enabled": False},
+#             "byol_original": {"enabled": True},
 #         }
 #     })
 
-#     # ============================================================
-#     # 2) Build module
-#     # ============================================================
 #     device = "cpu"
-#     print(f"[INFO] Using device: {device}")
-
 #     module = EEGPretrain(cfg)
 #     module = module.to(device)
 #     module.eval()
 
-#     print("[INFO] EEGPretrain module created successfully.")
 #     print(f"[INFO] Active tasks: {list(module.tasks.keys())}")
 
-#     # ============================================================
-#     # 3) Tạo batch giả
-#     # data sample của bạn có shape [19, 3200]
-#     # batch -> [B, 19, 3200]
-#     # ============================================================
+#     # Tạo batch giả
 #     B = 2
-#     x = torch.randn(B, 19, 3200, device=device)
+#     batch = (
+#         torch.randn(B, 19, 3200, device=device),
+#         torch.zeros(B, dtype=torch.long, device=device)
+#     )
 
-#     print
-
-#     # ============================================================
-#     # 4) Debug forward cho Original BYOL
-#     # ============================================================
 #     with torch.no_grad():
-#         debug_forward_original_byol(module, x)
+#         # Build context — sampling augmentation + mask xảy ra ở đây
+#         ctx = module.build_forward_context(batch)
+
+#         print(f"[DEBUG] x.shape       = {ctx.shared.x.shape}")
+#         print(f"[DEBUG] x_aug.shape   = {ctx.shared.x_aug.shape}")
+#         print(f"[DEBUG] mask_x.shape  = {ctx.shared.mask_x.shape}")
+#         print(f"[DEBUG] mask_y.shape  = {ctx.shared.mask_y.shape}")
+#         print(f"[DEBUG] chan_ids.shape = {ctx.shared.chan_ids.shape}")
+
+#         print("-" * 60)
+#         print("=== TASKS CONTEXT ===")
+#         if not ctx.tasks:
+#             print("[DEBUG] No task-specific contexts found.")
+#         else:
+#             for task_name, task_ctx in ctx.tasks.items():
+#                 print(f"\n👉 Task: [{task_name}]")
+#                 for key, val in task_ctx.items():
+#                     if isinstance(val, torch.Tensor):
+#                         print(f"  └─ [DEBUG] {key:12s} : Tensor shape = {val.shape}, dtype = {val.dtype}")
+#                     else:
+#                         print(f"  └─ [DEBUG] {key:12s} : {val}")
+#         print("-" * 60)
+
+#         # Forward
+#         loss_dict = module.shared_step(ctx)
+
+#     print("=" * 60)
+#     for name, loss in loss_dict.items():
+#         print(f"[DEBUG] {name:20s} loss = {loss.item():.6f}")
+#     print("[DEBUG] Forward check passed.")
 
 
-# if __name__ == "__main__":
-#     main()
+if __name__ == "__main__":
+    main()

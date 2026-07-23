@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --job-name=downstream_bcic2a_eegpt_contrastive
+#SBATCH --job-name=linear_probe_bcic2a_eegpt_contrastive
 #SBATCH --output=bash_logs/%x_%j.out
 #SBATCH --error=bash_logs/%x_%j.err
 #SBATCH --time=24:00:00          # hh:mm:ss

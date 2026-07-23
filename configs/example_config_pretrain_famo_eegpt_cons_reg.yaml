@@ -49,3 +49,9 @@ grad_monitor:
   ema_alpha: 0.1
   log_every_n: 4000
   # log_every_n: 100_000_000 # không tính grads
+
+resume:
+  enabled: false
+  ckpt_path: null
+  original_run_dir: null
+  tb_version: null

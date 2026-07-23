@@ -6,6 +6,7 @@ import copy
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from typing import Any, Dict
 
 from .base_task import BaseTask
 from src.pretrain_module.eegpt.utils import augmentation, make_masks
@@ -196,11 +197,12 @@ class ContrastiveBYOLTask(BaseTask):
     # FORWARD (Chuẩn hóa theo flow code gốc)
     # ============================================
 
-    def forward(self, shared_output, x, x_aug, mask_x, mask_y):
+    def forward(self, shared_output, ctx):
         """
         shared_output: out_enc của nhánh Online nhận x_aug [B, C, N, D]
         batch[0]: Dữ liệu gốc x (chưa qua augmentation)
         """
+        x = ctx.shared.x
         B = x.shape[0] # Lấy kích thước Batch thực tế
         device = x.device
         # Tự động khởi tạo mảng ID tuần tự giống hệt như code mẫu làm trong training_step
@@ -214,19 +216,15 @@ class ContrastiveBYOLTask(BaseTask):
         p_online = self.predictor(z_online)    
         p_online = self.pool(p_online)
 
+        # ===== TASK CONTEXT =====
+        task_ctx = ctx.tasks["byol"]
+        x2 = task_ctx["x2"]
+        ema_mask = task_ctx["ema_mask"]
+
         # =====================================
         # 2. NHÁNH TARGET EMA 
         # =====================================
-        x2 = augmentation(x)
         with torch.no_grad():
-            # ema_mask = mask_x
-            ema_mask, _ = make_masks(
-                self.online_encoder.encoder.num_patches, 
-                p_n_y=0.1, 
-                p_c_y=0.1
-            )
-
-            # Khởi chạy Target Encoder trên dữ liệu gốc x
             h_target = self.target_encoder(x2, self.online_encoder.chans_id.to(x2) , mask_x=ema_mask)
             p_target = self.target_projector(h_target) 
             p_target = self.pool(p_target)
@@ -234,14 +232,7 @@ class ContrastiveBYOLTask(BaseTask):
         # =====================================
         # 3. TÍNH TOÁN LOSS
         # =====================================
-        # Detach target giống BYOL — chỉ online branch được backprop
-        # loss, loss_koleo = id_loss(
-        #     z1=p_online,
-        #     z2=p_target.detach(),
-        #     id=id_tensor,
-        #     temperature=self.temperature,
-        #     koleo_weight=self.koleo_weight,
-        # )
+
         loss = id_loss(
             z1=p_online,
             z2=p_target.detach(),
@@ -250,47 +241,38 @@ class ContrastiveBYOLTask(BaseTask):
             decoupled=self.decoupled,
             koleo_weight=self.koleo_weight,
         )
- 
-        # return {
-        #     "loss": loss,
-        #     "loss_koleo": loss_koleo,   # optional: để BaseModule log nếu muốn
-        # }
+
         return {
             "loss": loss,
         }
 
- # ============================================
+    # ============================================
+    # BUILD Task
+    # ============================================
+    def build_task_context(
+        self,
+        batch,
+        shared_ctx, # SharedForwardContext
+        module=None,
+    ) -> Dict[str, Any]:
+
+        # 1. second view (target view)
+        x2 = augmentation(shared_ctx.x)
+
+        # 2. EMA mask (target encoder masking)
+        ema_mask, _ = make_masks(
+            module.model.encoder.num_patches,
+            p_n_y=0.1,
+            p_c_y=0.1
+        )
+        return {
+            "x2": x2,
+            "ema_mask": ema_mask,
+        }
+
+# ============================================
 # Loss functions 
 # ============================================
-
-def _koleo_one_view(z: torch.Tensor, eps: float = 1e-12) -> torch.Tensor:
-    """
-    KoLeo cho một view (Đúng logic code mẫu):
-    L = -(1/N) * sum_i log( min_{j!=i} ||z_i - z_j||^2 )
-    """
-    B = z.size(0)
-    if B < 2:
-        return z.new_tensor(0.0)
-
-    # Sử dụng bình phương khoảng cách Euclidean theo đúng mẫu, không dùng (1 - sim)
-    dist2 = torch.cdist(z, z, p=2).pow(2)
-
-    # Loại bỏ đường chéo bằng cách điền +inf
-    dist2.fill_diagonal_(float('inf'))
-
-    # Tìm khoảng cách nhỏ nhất tới neighbor
-    nn2, _ = dist2.min(dim=1)
-
-    # KoLeo loss
-    loss = -torch.mean(torch.log(nn2 + eps))
-    return loss
-
-
-def koleo_reg(z1: torch.Tensor, z2: torch.Tensor, eps: float = 1e-12) -> torch.Tensor:
-    """
-    Tính KoLeo regularizer trung bình trên cả 2 views.
-    """
-    return 0.5 * (_koleo_one_view(z1, eps) + _koleo_one_view(z2, eps))
 
 
 def id_loss(z1, z2, id, temperature=0.1, decoupled=False, koleo_weight=0.1):
@@ -299,10 +281,7 @@ def id_loss(z1, z2, id, temperature=0.1, decoupled=False, koleo_weight=0.1):
     '''
     device = z1.device
     B, D = z1.shape
-    
-    # Giữ nguyên việc tính KoLeo trên embedding GỐC (trước khi chuẩn hóa l2) theo code mẫu
-    # loss_koleo = koleo_reg(z1, z2)
-    
+
     # Chuẩn hóa l2 phục vụ cho Contrastive Loss
     z1_norm = F.normalize(z1, dim=1)
     z2_norm = F.normalize(z2, dim=1)
@@ -352,7 +331,6 @@ def id_loss(z1, z2, id, temperature=0.1, decoupled=False, koleo_weight=0.1):
     loss_nce = (l12 + l21) / 2
     
     # Kết hợp tổng loss với trọng số tương tự cấu trúc hiện tại của bạn
-    # loss_total = loss_nce + koleo_weight * loss_koleo
     loss_total = loss_nce 
     print(f"\nLoss NCE: {loss_total}")
 
