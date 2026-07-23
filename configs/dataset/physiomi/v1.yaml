@@ -1,0 +1,15 @@
+# configs/dataset/physiomi.yaml
+name: physiomi
+data_dir: /projects/EEG-foundation-model/tran-24/data_200Hz_processed/physiomi_no_car  
+seed: 7
+test_fold_index: 4
+cv_fold_index: 0      # thay đổi cái này cho mỗi CV round
+folds_json: null
+scale_div: 1000.0
+num_classes: 4
+num_channels: 64
+use_chans_num : 19
+time_points : 800
+patch_size: 200
+num_patch: 4
+use_channels_names: ["FP1","FP2","F7","F3","FZ","F4","F8","T3","C3","CZ","C4","T4","T5","P3","PZ","P4","T6","O1","O2"]

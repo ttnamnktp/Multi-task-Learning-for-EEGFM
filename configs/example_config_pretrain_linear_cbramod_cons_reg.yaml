@@ -1,0 +1,47 @@
+defaults:
+  - _self_
+  - dataset: pretraining_lmdb/main
+  - model: cbramod/L12_8
+  # - model: eegpt/L_822
+  - weight_method: linear
+  - hydra: pretrain
+
+seed: 42
+module:
+  name: cbramod_pretrain_module
+  # name: eegpt_pretrain_module
+
+tasks:
+  reconstruction:
+    enabled: true
+  contrastive:
+    enabled: false
+  byol:
+    enabled: false
+  byol_reg:
+    enabled: true
+
+data:
+  batch_size: 64
+  num_workers: 4
+
+trainer:
+  max_epochs: 50
+  accelerator: auto
+  devices: 1
+  precision: 32
+  num_sanity_val_steps: 0
+
+# use one_cycle scheduler
+optimizer:
+  name: adamw
+  weight_decay: 0.01
+
+scheduler:
+# note: auto use one cycle scheduler
+  # name: one_cycle
+  max_lr: 1e-4
+  div_factor: 25
+  final_div_factor: 200
+  pct_start: 0.20
+

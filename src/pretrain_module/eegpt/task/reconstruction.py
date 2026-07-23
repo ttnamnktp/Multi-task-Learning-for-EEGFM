@@ -5,10 +5,9 @@ from src.models.eegpt.eegpt import *
 
 class ReconstructionTask(BaseTask):
 
-    def __init__(self, online_encoder, models_configs):
+    def __init__(self, models_configs):
         super().__init__()
 
-        self.online_encoder = online_encoder
         self.models_configs = models_configs
 
         self.predictor = EEGTransformerPredictor(
@@ -21,9 +20,14 @@ class ReconstructionTask(BaseTask):
 
         self.loss_fn = nn.MSELoss()
 
-    def forward(self, shared_output, x, x_aug, mask_x, mask_y):
+    def forward(self, shared_output, ctx):
+        x_aug = ctx.shared.x_aug
+        mask_x = ctx.shared.mask_x
+        mask_y = ctx.shared.mask_y
+        chan_ids = ctx.shared.chan_ids
+
         out_pred_fake, out_pred_comb = self.predictor(shared_output, mask_x=mask_x)
-        out_rec = self.reconstructor(out_pred_comb, self.online_encoder.chans_id.to(x_aug), mask_y=mask_y)
+        out_rec = self.reconstructor(out_pred_comb, chan_ids, mask_y=mask_y)
 
         C, N = self.models_configs['num_patches']
         assert x_aug.shape[-1]%N==0 and x_aug.shape[-2]%C == 0

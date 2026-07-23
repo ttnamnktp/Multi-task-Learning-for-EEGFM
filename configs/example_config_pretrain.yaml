@@ -3,7 +3,8 @@ defaults:
   - dataset: pretraining_lmdb/v1
   - model: cbramod/L12_8
   # - model: eegpt/L_822
-  - weight_method: famo
+  # - weight_method: famo
+  - weight_method: ogr
   - hydra: pretrain
 
 seed: 42
@@ -17,6 +18,8 @@ tasks:
   contrastive:
     enabled: false
   byol:
+    enabled: false
+  byol_reg:
     enabled: true
 
 data:
@@ -24,10 +27,11 @@ data:
   num_workers: 4
 
 trainer:
-  max_epochs: 20
+  max_epochs: 10
   accelerator: auto
   devices: 1
   precision: 32
+  num_sanity_val_steps: 0
 
 # use one_cycle scheduler
 optimizer:
@@ -39,6 +43,18 @@ scheduler:
   # name: one_cycle
   max_lr: 1e-4
   div_factor: 25
-  final_div_factor: 200
+  final_div_factor: 2
   pct_start: 0.20
+  num_sanity_val_steps: 0
 
+
+grad_monitor:
+  enabled: true
+
+  # EMA smoothing for loss-decrease-rate  (0 < alpha <= 1)
+  ema_alpha: 0.1
+ 
+  # Run expensive gradient metrics every N steps.
+  # Set to 1 for every step (slow — one backward per task per step).
+  log_every_n: 50
+  # log_every_n: 100_000_000 # không tính grads

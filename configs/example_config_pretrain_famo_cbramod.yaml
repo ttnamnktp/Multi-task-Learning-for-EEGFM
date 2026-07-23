@@ -18,16 +18,19 @@ tasks:
     enabled: false
   byol:
     enabled: true
+  byol_original:
+    enabled: false
 
 data:
   batch_size: 64
   num_workers: 4
 
 trainer:
-  max_epochs: 100
+  max_epochs: 50
   accelerator: auto
   devices: 1
   precision: 32
+  num_sanity_val_steps: 0
 
 # use one_cycle scheduler
 optimizer:
@@ -42,3 +45,6 @@ scheduler:
   final_div_factor: 200
   pct_start: 0.20
 
+resume:
+  enabled: false
+  ckpt_path: null

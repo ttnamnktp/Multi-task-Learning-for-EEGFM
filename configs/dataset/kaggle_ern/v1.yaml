@@ -1,0 +1,13 @@
+name: kaggle_ern
+data_dir: /projects/EEG-foundation-model/tran-24/data_200Hz_processed/KaggleERN_200hz_no_CAR
+seed: 7
+fold: 1
+scale_div: 1000.0
+
+num_classes: 2
+num_channels: 19
+use_chans_num : 19
+time_points : 400
+patch_size: 200
+num_patch: 2
+use_channels_names: ["FP1","FP2","F7","F3","FZ","F4","F8","T3","C3","CZ","C4","T4","T5","P3","PZ","P4","T6","O1","O2"]

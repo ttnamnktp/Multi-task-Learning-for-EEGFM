@@ -1,7 +1,7 @@
 name: bciciv2a
 num_classes: 4
 num_channels: 22
-use_chans_num : 15
+use_chans_num : 19
 time_points : 1024
 use_channels_names:
     - FP1
@@ -12,15 +12,19 @@ use_channels_names:
     - F4
     - F8
     # - T7
+    - T3
     - C3
     - CZ
     - C4
     # - T8
     # - P7
+    - T4
+    - T5
     - P3
     - PZ
     - P4
     # - P8
+    - T6
     - O1
     - O2
 datasets_dir: /home/infres/ttran-25/project/datasets/downstream/lmdb_bciciv2a_0_38Hz/LOSO_A01

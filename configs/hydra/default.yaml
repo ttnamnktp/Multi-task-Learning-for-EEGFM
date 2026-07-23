@@ -1,6 +1,6 @@
 # configs/hydra/default.yaml
 run:
   # Tự động tạo thư mục: outputs/tên_dataset/tên_model/ngày/giờ
-  dir: outputs/${hydra:runtime.choices.model}/${now:%Y-%m-%d}/${now:%H-%M-%S}
+  dir: outputs/${hydra:runtime.choices.model}/${oc.env:SLURM_JOB_ID,local}/${now:%Y-%m-%d}/${now:%H-%M-%S}
 sweep:
-  dir: multirun/${hydra:runtime.choices.model}/${now:%Y-%m-%d_%H-%M-%S}
+  dir: multirun/${hydra:runtime.choices.model}/${oc.env:SLURM_JOB_ID,local}/${now:%Y-%m-%d_%H-%M-%S}

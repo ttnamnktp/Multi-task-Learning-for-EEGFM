@@ -1,0 +1,29 @@
+name: eegpt_downstream
+# pretrained_ckpt: /home/infres/ttran-25/eegfm/outputs/pretraining_lmdb/eegpt/2026-05-12/15-36-15/checkpoints/best-epoch=23-valid_loss=1.2120.ckpt
+pretrained_ckpt: /home/infres/ttran-25/eegfm/outputs_pretrain/eegpt/L_822/2026-06-08/11-41-27/checkpoints/best-epoch=19-valid_loss=2.0261.ckpt
+# img_size: [19, 3200]
+
+# patch_size: 200
+
+embed_dim: 512
+embed_num: 4
+
+num_heads: 8
+
+encoder_depth: 8
+predictor_depth: 2
+reconstructor_depth: 2
+
+mlp_ratio: 4.0
+
+qkv_bias: true
+
+drop_rate: 0.0
+attn_drop_rate: 0.0
+drop_path_rate: 0.0
+
+init_std: 0.02
+
+# patch_size = timepoints / patch_num
+patch_num: 16
+patch_size: 64 # nếu timepoints là 1024, hiện tại patch_sizr được tự động tính

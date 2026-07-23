@@ -16,17 +16,15 @@ class ReconstructionTask(BaseTask):
 
         self.loss_fn = nn.MSELoss()
 
-    def forward(self, shared_output, x, mask):
+    def forward(self, shared_output, ctx):
+        x = ctx.shared.x
+        mask = ctx.shared.mask
+
         z = shared_output
         pred = self.decoder(z)
-        # loss = self.loss_fn(pred, target)
 
         masked_x = x[mask == 1]
         masked_y = pred[mask == 1]
-
-        # print("recon_error_visible:", recon_error_visible.item())
-        # print("recon_error_masked :", recon_error_masked.item())
-
         loss = self.loss_fn(masked_x, masked_y)
         
         return {

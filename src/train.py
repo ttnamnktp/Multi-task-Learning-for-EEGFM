@@ -4,9 +4,10 @@ from omegaconf import DictConfig
 from lightning.pytorch.loggers import TensorBoardLogger
 from lightning.pytorch.callbacks import ModelCheckpoint
 from hydra.core.hydra_config import HydraConfig
+import shutil
+from pathlib import Path
 
 from src.module.registry import get_module
-import src.module
 from src.data.data import EEGDataModule
 from src.utils.callbacks import build_callbacks
 
@@ -40,16 +41,36 @@ def main(cfg: DictConfig):
         devices=cfg.trainer.devices,
         precision=cfg.trainer.precision,
         logger=logger,
-        callbacks=callbacks
+        callbacks=callbacks,
+        gradient_clip_val=1.0,       # Thêm dòng này để clip grad norm = 1.0
+        gradient_clip_algorithm="norm" # Mặc định là theo norm
     )
 
     trainer.fit(model, datamodule=datamodule)
 
-    # 5. Tester
+    # 5. Tester - BEST
+    print(" ============== Testing BEST checkpoint... ============== ")
     trainer.test(
         ckpt_path="best",
         datamodule=datamodule
     )
+
+    # 6. Tester - LAST
+    print(" ============== Testing LAST checkpoint... ============== ")
+    trainer.test(
+        ckpt_path="last",
+        datamodule=datamodule
+    )
+
+    # 7. Tự động xóa checkpoint sau khi test xong
+    print(" ============== Cleaning up checkpoints... ============== ")
+    # Lấy đường dẫn thư mục checkpoints từ callback
+    for callback in trainer.callbacks:
+        if isinstance(callback, ModelCheckpoint):
+            ckpt_dir = callback.dirpath
+            if ckpt_dir and Path(ckpt_dir).exists():
+                print(f"Removing checkpoint directory: {ckpt_dir}")
+                shutil.rmtree(ckpt_dir) # Xóa toàn bộ thư mục chứa file .ckpt
 
 if __name__ == '__main__':
     main()

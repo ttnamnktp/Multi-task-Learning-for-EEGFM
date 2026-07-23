@@ -2,7 +2,7 @@ import hydra
 import lightning as L
 from omegaconf import DictConfig
 from lightning.pytorch.loggers import TensorBoardLogger
-from lightning.pytorch.callbacks import ModelCheckpoint
+from lightning.pytorch.callbacks import ModelCheckpoint, LearningRateMonitor
 from hydra.core.hydra_config import HydraConfig
 import os
 
@@ -24,21 +24,33 @@ def main(cfg: DictConfig):
 
     # 2. Logger
     logger = TensorBoardLogger(
-        save_dir=hydra_dir, 
-        name="tb_logs", 
+        save_dir=cfg.resume.original_run_dir if cfg.resume.enabled else hydra_dir,
+        name="tb_logs",
+        version=cfg.resume.tb_version if cfg.resume.enabled else None,
     )
     print("Logger dir:", logger.log_dir)
 
     # 3. Callbacks
+    # Định nghĩa thư mục lưu checkpoint động dựa trên việc có resume hay không
+    checkpoint_dir = (
+        os.path.join(cfg.resume.original_run_dir, "checkpoints") 
+        if cfg.resume.enabled 
+        else os.path.join(hydra_dir, "checkpoints")
+    )
     ckpt = ModelCheckpoint(
-        dirpath=os.path.join(hydra_dir, "checkpoints"),
-        monitor="valid_loss",   # dùng đúng metric pretrain
+        dirpath=checkpoint_dir, # Thay hydra_dir bằng checkpoint_dir đã phân nhánh
+        monitor="valid/average_valid_loss",   # dùng đúng metric pretrain
         mode="min",
         save_top_k=1,
-        filename="best-{epoch}-{valid_loss:.4f}",
-        verbose=True
+        filename="best-{epoch}-{valid/average_valid_loss:.4f}",
+        verbose=True,
+        save_last=True,
     )
     print("Checkpoint dir:", ckpt.dirpath)
+
+    lr_monitor = LearningRateMonitor(
+        logging_interval="step"
+    )
 
     # 4. Khởi tạo Trainer
     trainer = L.Trainer(
@@ -47,12 +59,17 @@ def main(cfg: DictConfig):
         devices=cfg.trainer.devices,
         precision=cfg.trainer.precision,
         logger=logger,
-        callbacks=[ckpt],
+        callbacks=[ckpt, lr_monitor],
         gradient_clip_val=1.0,
-        gradient_clip_algorithm="norm"
+        gradient_clip_algorithm="norm",
+        num_sanity_val_steps=cfg.trainer.num_sanity_val_steps
     )
 
-    trainer.fit(model, datamodule=datamodule)
+    trainer.fit(
+        model, 
+        datamodule=datamodule,
+        ckpt_path=cfg.resume.ckpt_path if cfg.resume.enabled else None,
+        )
 
 if __name__ == '__main__':
     main()

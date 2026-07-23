@@ -2,7 +2,6 @@
 __pycache__/
 *.pyc
 
-# Cho Deep Learning / AI (Ví dụ)
 *.pt
 *.pth
 *.ckpt
