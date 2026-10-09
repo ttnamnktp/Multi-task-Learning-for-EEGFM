@@ -1,0 +1,26 @@
+# Core training and configuration
+torch
+lightning
+pytorch-lightning
+hydra-core
+omegaconf
+torchmetrics
+
+# Data loading and preprocessing
+numpy
+scipy
+pandas
+lmdb
+scikit-learn
+
+# Logging and visualization
+tensorboard
+matplotlib
+
+# Optional research / analysis modules included in the repository
+cvxpy
+seaborn
+wandb
+tqdm
+antropy
+nolds
