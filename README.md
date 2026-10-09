@@ -4,7 +4,7 @@
 
 [![Python](https://img.shields.io/badge/Python-PyTorch-3776AB?logo=python&logoColor=white)](#implementation) [![Framework](https://img.shields.io/badge/Framework-Lightning%20%7C%20Hydra-6959CD)](#implementation) [![Research](https://img.shields.io/badge/Focus-Multi--Task%20Optimization-informational)](#research-question)
 
-> **Research internship project — Télécom Paris / Institut Polytechnique de Paris (2026).** This repository accompanies the internship report *Multi-task Learning for Pretraining EEG Foundation Models*. The results below are taken from the report and have not been independently reproduced from this repository snapshot.
+> **Research internship project — Télécom Paris / Institut Polytechnique de Paris (2026).** This repository accompanies the internship report *Multi-task Learning for Pretraining EEG Foundation Models*. 
 
 ## Overview
 
@@ -108,7 +108,7 @@ FAMO leads on three of the four **CBraMod** evaluations (BCIC-IV-2a, PhysioNet-M
 
 The pretraining data were drawn from the **[Temple University Hospital EEG Data Corpus (TUH EEG Corpus / TUEG)](https://doi.org/10.3389/fnins.2016.00196)**, a collection of clinical EEG recordings described by Obeid and Picone (2016) [1]. The experiments used a **processed subset totaling approximately 1,200 hours of EEG**; this figure describes the data used in this study, **not the full size of TUEG**.
 
-According to the internship report, preprocessing consisted of:
+The preprocessing consisted of:
 
 - Selecting **19 channels** from the standard international 10–20 EEG montage.
 - Discarding the first and last minute of each recording.
@@ -194,15 +194,6 @@ python -m src.train --config-name example_config_downstream \
 The commands are **entry points verified from source**, not end-to-end runs tested on a clean environment. Exact downstream model/config overrides depend on the chosen dataset, backbone and task. For examples of the original Slurm workflow, inspect `script/pretrain/` and `script/downstream/`, replacing cluster-specific paths before running them elsewhere.
 
 **Checkpoint caution:** `src/train.py` tests `best` and `last` checkpoints and subsequently deletes its checkpoint directory. Review that cleanup behavior before adapting the script to retain artifacts.
-
-## Limitations and future directions
-
-- **Compute and throughput:** FAMO's additional forward evaluation for weight adaptation incurs a measurable runtime overhead.
-- **Objective selection:** two tasks are studied; extending the approach to more self-supervised EEG tasks requires further experiments.
-- **Transferability:** improvements vary by backbone and dataset; FAMO is not uniformly best across all downstream scores.
-- **Reproducibility:** datasets, training checkpoints, pinned dependencies and machine-independent Slurm configurations are not all included in this snapshot.
-
-Future work may explore cheaper approximations to FAMO's extra forward pass, more diverse objectives, and broader cross-dataset validation.
 
 ## References
 
